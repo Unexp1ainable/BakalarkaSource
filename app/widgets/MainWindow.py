@@ -17,10 +17,15 @@ class MainWindow(QMainWindow):
 
         # init components
         self.map = GradientMap()
+        self.map.setSizePolicy(QSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding))
+
         self.imageLoader = ImageLoader()
+        self.imageLoader.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding))
 
         # create new layout of the main window
         layout = QGridLayout()
+        layout.setColumnStretch(0, 1)
+        layout.addWidget(self.imageLoader, 0, 0)
         layout.addWidget(self.map, 0, 1)
 
         # set layout of the main window
@@ -34,17 +39,23 @@ class MainWindow(QMainWindow):
 
         try:
             self.map.setMap("C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/source/sim.png")
+            filenames = ["data/cinove_koule/25_mikro/cropped/25_mikro_3.tif",
+                         "data/cinove_koule/25_mikro/cropped/25_mikro_4.tif",
+                         "data/cinove_koule/25_mikro/cropped/25_mikro_5.tif",
+                         "data/cinove_koule/25_mikro/cropped/25_mikro_6.tif",
+                         ]
+            self.imageLoader.loadImages(filenames)
         except:
             pass
 
-    @Slot()
+    @ Slot()
     def loadGradientMaps(self):
         filename = QFileDialog.getOpenFileName()
         if (filename[0]):
             self.map.setMap(filename[0])
 
-    @Slot()
+    @ Slot()
     def loadBSEImages(self):
         filenames, _ = QFileDialog.getOpenFileNames()
         if filenames:
-            print(filenames)
+            self.imageLoader.loadImages(filenames)

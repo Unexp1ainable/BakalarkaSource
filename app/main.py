@@ -8,6 +8,7 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication([])
 
     window = MainWindow()
+    window.resize(800, 450)
     window.show()
 
     sys.exit(app.exec())

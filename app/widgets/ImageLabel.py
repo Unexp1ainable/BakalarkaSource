@@ -1,10 +1,10 @@
 from PySide6.QtGui import QPixmap, QResizeEvent
 from PySide6.QtWidgets import QLabel, QSizePolicy, QFrame
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal
+import PySide6
 
 
 class ImageLabel(QLabel):
-
     def __init__(self):
         super(ImageLabel, self).__init__()
         self.pixmapOrig = None
@@ -15,10 +15,16 @@ class ImageLabel(QLabel):
         self.setAlignment(Qt.AlignCenter)
         self.setMargin(0)
 
+    def replacePixmap(self, pm: QPixmap) -> None:
+        self.pixmapOrig = pm
+        h = self.pixmap().height()
+        w = self.pixmap().width()
+        super().setPixmap(pm.scaled(w, h))
+
     def setPixmap(self, pm: QPixmap, h, w) -> None:
         self.pixmapOrig = pm
         self.setFrameStyle(QFrame.NoFrame)
-        super(ImageLabel, self).setPixmap(pm.scaled(h, w, Qt.KeepAspectRatio))
+        super().setPixmap(pm.scaled(w, h, Qt.KeepAspectRatio))
 
     def resizeEvent(self, a0: QResizeEvent) -> None:
         if self.pixmapOrig:
