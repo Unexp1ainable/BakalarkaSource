@@ -1,0 +1,4 @@
+200_mikro_3.tif
+200_mikro_4.tif
+200_mikro_5.tif
+200_mikro_6.tif

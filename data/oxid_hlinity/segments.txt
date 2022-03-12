@@ -1,0 +1,4 @@
+BSE_Q_1.tif
+BSE_Q_2.tif
+BSE_Q_3.tif
+BSE_Q_4.tif
