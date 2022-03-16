@@ -9,10 +9,9 @@ from widgets.ImageLabel import ImageLabel
 from src.opencv_qt_compat import *
 
 
-class ImageLoader(QWidget):
+class SegmentManager(QWidget):
     def __init__(self):
         super().__init__()
-        layout = QGridLayout()
         self.imgLabels = []
         self.imgs = []
         self.moving = None
@@ -20,19 +19,22 @@ class ImageLoader(QWidget):
         for i in range(4):
             self.imgLabels.append(ImageLabel())
 
+        layout = QGridLayout()
         layout.addWidget(self.imgLabels[0], 0, 0)
         layout.addWidget(self.imgLabels[1], 0, 1)
         layout.addWidget(self.imgLabels[2], 1, 0)
         layout.addWidget(self.imgLabels[3], 1, 1)
+
+        layout.setAlignment(Qt.AlignCenter)
+
         self.setLayout(layout)
 
-    def loadImages(self, paths):
-        if (len(paths) != 4):
+    def loadImages(self, imgs):
+        if (len(imgs) != 4):
             return
 
-        self.imgs = []
+        self.imgs = imgs
         for i in range(4):
-            self.imgs.append(cv.imread(paths[i]))
             self.imgLabels[i].setPixmap(mat2PixRGB(self.imgs[i]), 100, 100)
 
     def mouseMoveEvent(self, event: QMouseEvent) -> None:
@@ -43,7 +45,6 @@ class ImageLoader(QWidget):
                 xwidg = self.width()
                 ywidg = self.height()
                 self.moving = x//(xwidg//2) + (y//(ywidg//2))*2
-                print(self.moving)
 
     def mouseReleaseEvent(self, event: QMouseEvent) -> None:
         if event.button() == Qt.LeftButton:
@@ -60,6 +61,8 @@ class ImageLoader(QWidget):
                 self.swapImages(moving, target)
 
     def swapImages(self, first: int, second: int):
+        if (not self.imgs):
+            return
         tmp = self.imgs[first]
         self.imgs[first] = self.imgs[second]
         self.imgs[second] = tmp

@@ -1,9 +1,10 @@
+from copy import deepcopy
 import string
 import cv2 as cv
 import numpy as np
 from PySide6.QtWidgets import *
-from PySide6.QtGui import QAction, QPaintEvent, QPixmap, QTransform, QImage
-from PySide6.QtCore import Slot, Qt
+from PySide6.QtGui import QAction, QPaintEvent, QPixmap, QTransform, QImage, QPainter, QColor, QPen, QBrush
+from PySide6.QtCore import Slot, Qt, QPoint
 from PySide6 import QtCore
 from src.opencv_qt_compat import *
 from widgets.ImageLabel import *
@@ -23,9 +24,11 @@ class GradientMap(QWidget):
         self.map1Label = ImageLabel()
         innerLayout.addWidget(self.map1Label, 0, 1)
         self.map2Label = ImageLabel()
-        innerLayout.addWidget(self.map2Label, 1, 1)
+        innerLayout.addWidget(self.map2Label, 1, 0)
         self.map3Label = ImageLabel()
-        innerLayout.addWidget(self.map3Label, 1, 0)
+        innerLayout.addWidget(self.map3Label, 1, 1)
+
+        self.labels = (self.map0Label, self.map1Label, self.map2Label, self.map3Label,)
 
         layout = QVBoxLayout()
         self.mapOverviewLabel = ImageLabel()
@@ -36,21 +39,43 @@ class GradientMap(QWidget):
 
         self.setMinimumSize(150, 300)
 
-    def setMap(self, path: string):
-        self.map0 = cv.imread(path, cv.IMREAD_GRAYSCALE)
-        self.map1 = cv.rotate(self.map0, cv.ROTATE_90_CLOCKWISE)
-        self.map2 = cv.rotate(self.map1, cv.ROTATE_90_CLOCKWISE)
-        self.map3 = cv.rotate(self.map2, cv.ROTATE_90_CLOCKWISE)
+    def setMap(self, imgs, summed):
+        self.imgs = imgs
+        self.sumImg = summed
+        self.maps = []
+        for img in imgs:
+            self.maps.append(cv.cvtColor(img, cv.COLOR_BGR2GRAY))
 
-        mapAndLabelList = ((self.map0, self.map0Label), (self.map1, self.map1Label),
-                           (self.map2, self.map2Label), (self.map3, self.map3Label))
-        self.summed = np.zeros(self.map0.shape, np.int64)
+        mapAndLabelList = ((imgs[0], self.map0Label), (imgs[1], self.map1Label),
+                           (imgs[2], self.map2Label), (imgs[3], self.map3Label))
 
         for map, label in mapAndLabelList:
-            pixmap = mat2PixGray(map)
+            pixmap = mat2PixRGB(map)
             label.setPixmap(pixmap, self.MAP_SIZE, self.MAP_SIZE)
-            self.summed += map
 
-        self.summed = (self.summed // 4).astype(np.uint8)
-        pixmap = mat2PixGray(self.summed)
+        pixmap = mat2PixRGB(summed)
         self.mapOverviewLabel.setPixmap(pixmap, self.MAP_SIZE*2, self.MAP_SIZE*2)
+
+    def color(self, a, b, c, d):
+        it = (a, b, c, d)
+        colors = ((0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 255, 255))
+        sumcopy = deepcopy(self.sumImg)
+        for i in range(4):
+            img = deepcopy(self.imgs[i])
+            mask = self.maps[i] == it[i]
+            img[mask] = colors[i]
+            sumcopy[mask] = colors[i]
+            pixmap = mat2PixRGB(img)
+            self.labels[i].replacePixmap(pixmap)
+        self.mapOverviewLabel.replacePixmap(mat2PixRGB(sumcopy))
+
+    def point(self, pt, color=Qt.magenta):
+        pix = self.mapOverviewLabel.pixmap()
+        painter = QPainter(pix)
+        pen = QPen(color, 3)
+        brush = QBrush(color)
+        painter.setPen(pen)
+        painter.setBrush(brush)
+        painter.drawEllipse(QPoint(int(pt[1]*pix.width()), int(pt[0]*pix.height())), 3, 3)
+        painter.end()
+        self.mapOverviewLabel.replacePixmap(pix)
