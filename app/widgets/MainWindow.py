@@ -2,7 +2,7 @@ from typing import List, Tuple
 from PySide6.QtWidgets import *
 from PySide6.QtGui import QAction, QPixmap, QTransform, QMouseEvent
 from PySide6.QtCore import Slot, Qt
-from widgets.GradientMap import GradientMap
+from widgets.ReflectanceMap import ReflectanceMap
 from widgets.ImageManager import ImageManager
 import cv2 as cv
 import numpy as np
@@ -24,13 +24,16 @@ class MainWindow(QMainWindow):
 
         # init menubar
         menu = self.menuBar().addMenu("Load")
-        self.loadImages = QAction("Load BSE images")
-        self.loadMaps = QAction("Load gradient maps")
-        menu.addAction(self.loadImages)
-        menu.addAction(self.loadMaps)
+        self.loadImagesAction = QAction("Load BSE images")
+        self.loadMapsAction = QAction("Load Reflectance maps")
+        menu.addAction(self.loadImagesAction)
+        menu.addAction(self.loadMapsAction)
+        menu = self.menuBar().addMenu("Show")
+        self.showNormalImageAction = QAction("Show normal image")
+        menu.addAction(self.showNormalImageAction)
 
         # init components
-        self.map = GradientMap()
+        self.map = ReflectanceMap()
         self.map.setSizePolicy(QSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding))
 
         self.imageManager = ImageManager()
@@ -61,12 +64,13 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(mainWidget)
 
         # connect signals
-        self.loadMaps.triggered.connect(self.loadGradientMaps)
-        self.loadImages.triggered.connect(self.loadBSEImages)
+        self.loadMapsAction.triggered.connect(self.loadGradientMaps)
+        self.loadImagesAction.triggered.connect(self.loadBSEImages)
+        self.showNormalImageAction.triggered.connect(self.showNormalImage)
         self.imageManager.selector.dclicked.connect(self.onSelection)
 
         try:
-            self.loadGradientMaps(["C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/source/sim.png"])
+            self.loadGradientMaps(["C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/source/sim2.png"])
             filenames = ["../data/cinove_koule/25_mikro/cropped/25_mikro_3.tif",
                          "../data/cinove_koule/25_mikro/cropped/25_mikro_4.tif",
                          "../data/cinove_koule/25_mikro/cropped/25_mikro_5.tif",
@@ -211,8 +215,13 @@ class MainWindow(QMainWindow):
                 else:
                     finalPoints.append(pts[1])
 
+        for pt in finalPoints:
+            self.map.point(norm(pt), Qt.cyan)
+
         finalPt: np.ndarray = np.sum(finalPoints, axis=0) / 6
-        self.map.point(norm(finalPt), Qt.white)
+        nfp = norm(finalPt)
+        self.map.point(nfp, Qt.white)
+        self.map.setPQ(*self.calculatePQ(nfp[0], nfp[1]))
 
     def averageFinalTentative(self, final: List[Tuple[int, int]],
                               tentative: List[Tuple[Tuple[int, int],
@@ -234,3 +243,13 @@ class MainWindow(QMainWindow):
         a = tree.query(points2, 1)
         i = np.argmin(a[0])
         return (points2[i], points1[a[1][i]])
+
+    def calculatePQ(self, x, y):
+        x = x*2-1
+        y = y*2-1
+        dx = -x/(np.sqrt(-x**2-y**2+1))
+        dy = -y/(np.sqrt(-x**2-y**2+1))
+        return dx, dy
+
+    def showNormalImage(self):
+        pass

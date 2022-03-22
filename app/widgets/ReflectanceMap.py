@@ -10,7 +10,7 @@ from src.opencv_qt_compat import *
 from widgets.ImageLabel import *
 
 
-class GradientMap(QWidget):
+class ReflectanceMap(QWidget):
     MAP_SIZE = 100
 
     def __init__(self):
@@ -32,9 +32,17 @@ class GradientMap(QWidget):
 
         layout = QVBoxLayout()
         self.mapOverviewLabel = ImageLabel()
+        pqLabel = QLabel("p,q:")
+        self.gaussCoords = QLabel()
+        hL = QHBoxLayout()
+        hL.addWidget(pqLabel)
+        hL.addWidget(self.gaussCoords)
+
         layout.setAlignment(Qt.AlignHCenter)
         layout.addWidget(w)
         layout.addWidget(self.mapOverviewLabel)
+
+        layout.addLayout(hL)
         self.setLayout(layout)
 
         self.setMinimumSize(150, 300)
@@ -79,3 +87,6 @@ class GradientMap(QWidget):
         painter.drawEllipse(QPoint(int(pt[1]*pix.width()), int(pt[0]*pix.height())), 3, 3)
         painter.end()
         self.mapOverviewLabel.replacePixmap(pix)
+
+    def setPQ(self, p, q):
+        self.gaussCoords.setText(str(p) + ", " + str(q))

@@ -1,32 +1,48 @@
 import string
+from typing import List
 import cv2 as cv
 import numpy as np
+from PySide6.QtSvgWidgets import QSvgWidget
 from PySide6.QtWidgets import *
 from PySide6.QtGui import QAction, QPaintEvent, QPixmap, QTransform, QImage, QMouseEvent
 from PySide6.QtCore import Slot, Qt
 from PySide6 import QtCore
 from widgets.ImageLabel import ImageLabel
 from src.opencv_qt_compat import *
+from assets import bse_segments_assets
 
 
 class SegmentManager(QWidget):
     def __init__(self):
         super().__init__()
-        self.imgLabels = []
+        self.imgLabels: List[ImageLabel] = []
         self.imgs = []
         self.moving = None
+
+        # self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         for i in range(4):
             self.imgLabels.append(ImageLabel())
 
         layout = QGridLayout()
-        layout.addWidget(self.imgLabels[0], 0, 0)
-        layout.addWidget(self.imgLabels[1], 0, 1)
-        layout.addWidget(self.imgLabels[2], 1, 0)
-        layout.addWidget(self.imgLabels[3], 1, 1)
+        layout.addWidget(self.imgLabels[0], 0, 0, 2, 2)
+        layout.addWidget(self.imgLabels[1], 0, 4, 2, 2)
+        layout.addWidget(self.imgLabels[2], 2, 0, 2, 2)
+        layout.addWidget(self.imgLabels[3], 2, 4, 2, 2)
 
-        layout.setAlignment(Qt.AlignCenter)
+        segmentImage = QSvgWidget(":/segments/bse_detector.svg")
+        segmentImage.renderer().setAspectRatioMode(Qt.KeepAspectRatio)
+        segmentImage.setMinimumSize(100, 100)
+        segmentImage.setMaximumSize(150, 212)
+        segmentImage.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
+        # segmentImage.setScaledContents(True)
+        layout.addWidget(segmentImage, 1, 2, 2, 2)
 
+        layout.setAlignment(segmentImage, Qt.AlignCenter)
+        # layout.setColumnStretch(0, 300)
+        # layout.setColumnStretch(1, 300)
+        # layout.setColumnStretch(4, 300)
+        # layout.setColumnStretch(5, 300)
         self.setLayout(layout)
 
     def loadImages(self, imgs):

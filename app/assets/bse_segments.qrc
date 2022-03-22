@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/segments">
+        <file>bse_detector.svg</file>
+    </qresource>
+</RCC>

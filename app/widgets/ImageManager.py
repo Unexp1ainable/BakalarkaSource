@@ -20,9 +20,10 @@ class ImageManager(QWidget):
 
         self.segmentManager = SegmentManager()
         self.selector = ImageLabel()
+        self.selector.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         layout = QVBoxLayout()
-        layout.addWidget(self.segmentManager)
-        layout.addWidget(self.selector)
+        layout.addWidget(self.segmentManager, 1)
+        layout.addWidget(self.selector, 2)
         self.setLayout(layout)
 
     def loadImages(self, imgs, sumImg):
