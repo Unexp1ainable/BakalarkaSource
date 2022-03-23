@@ -5,7 +5,7 @@ import numpy as np
 from PySide6.QtSvgWidgets import QSvgWidget
 from PySide6.QtWidgets import *
 from PySide6.QtGui import QAction, QPaintEvent, QPixmap, QTransform, QImage, QMouseEvent
-from PySide6.QtCore import Slot, Qt
+from PySide6.QtCore import Slot, Qt, Signal
 from PySide6 import QtCore
 from widgets.ImageLabel import ImageLabel
 from src.opencv_qt_compat import *
@@ -13,6 +13,8 @@ from assets import bse_segments_assets
 
 
 class SegmentManager(QWidget):
+    swapped = Signal(int, int)
+
     def __init__(self):
         super().__init__()
         self.imgLabels: List[ImageLabel] = []
@@ -84,3 +86,5 @@ class SegmentManager(QWidget):
         self.imgs[second] = tmp
         for i in range(4):
             self.imgLabels[i].replacePixmap(mat2PixRGB(self.imgs[i]))
+
+        self.swapped.emit(first, second)
