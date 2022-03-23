@@ -10,22 +10,15 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-file(GLOB SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/**/*.cpp)
-file(GLOB HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/**/*.h)
-file(GLOB UIS ${CMAKE_CURRENT_SOURCE_DIR}/**/*.ui)
-file(GLOB RCS ${CMAKE_CURRENT_SOURCE_DIR}/**/*.rc)
+file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS *.cpp *.h *.ui *.qrc)
+
+find_package(OpenCV REQUIRED)
+find_package(Qt6 COMPONENTS Widgets SvgWidgets REQUIRED)
 
 
-set(CMAKE_PREFIX_PATH "${Qt_DIR}/lib/cmake")
+add_executable(${PROJECT_NAME} ${SOURCES})
 
-find_package( OpenCV REQUIRED )
-find_package(QT NAMES Qt6 COMPONENTS Widgets Core Gui REQUIRED)
-find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets REQUIRED)
-
-
-add_executable(${PROJECT_NAME} main.cpp ${SOURCES} ${HEADERS} ${UIS} ${RCS})
-
-target_link_libraries(${PROJECT_NAME} PRIVATE Qt6::Widgets Qt6::Core Qt6::Gui ${OpenCV_LIBS}) 
+target_link_libraries(${PROJECT_NAME} PRIVATE Qt6::Widgets Qt6::SvgWidgets ${OpenCV_LIBS}) 
 
 include_directories(${Qt_DIR}/include)
 include_directories(${OpenCV_DIR}/include)

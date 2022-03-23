@@ -2,22 +2,26 @@
 //
 
 #include <iostream>
+#include <QFile>
 #include <QMainWindow>
 #include <QApplication>
 #include <opencv2/opencv.hpp>
+#include "widgets/MainWindow/MainWindow.h"
+
+#include <QVBoxLayout>
 
 int main(int argc, char* argv[])
 {
+    QApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::Round);
 	auto app = QApplication(argc, argv);
-	auto window = QMainWindow();
-  /*  # load style
-        try :
-        with open("style.qss") as file :
-    lines = file.read()
-        app.setStyleSheet(lines)
-        except :
-        pass*/
-    auto b = cv::Mat::zeros(2,2,CV_8U);
+	auto window = MainWindow();
+
+    QFile file(":/gui/style/style.qss");
+    file.open(QFile::ReadOnly);
+    if (file.isOpen()) {
+        QString styleSheet = QString(file.readAll());
+        app.setStyleSheet(styleSheet);
+    }
 
     window.resize(800, 800);
     window.show();
