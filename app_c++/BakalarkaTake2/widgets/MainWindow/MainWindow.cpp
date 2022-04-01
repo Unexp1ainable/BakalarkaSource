@@ -61,9 +61,7 @@ void MainWindow::loadReflectanceMaps(QString filename) {
 	}
 
 	// switch last 2 to keep logical order in UI
-	auto tmp = m_maps[2];
-	m_maps[2] = m_maps[3];
-	m_maps[3] = tmp;
+	swap(m_maps[2], m_maps[3]);
 
 	// prepare grayscale images
 	for (int i = 0; i < 4; i++) {
@@ -107,27 +105,63 @@ void MainWindow::onSelected(double x, double y)
 {
 	int trueX = m_imgs[0].cols * x;
 	int trueY = m_imgs[0].rows * y;
-	auto a = m_grayImgs[0].at<uint8_t>(trueX, trueY);
-	auto b = m_grayImgs[1].at<uint8_t>(trueX, trueY);
-	auto c = m_grayImgs[2].at<uint8_t>(trueX, trueY);
-	auto d = m_grayImgs[3].at<uint8_t>(trueX, trueY);
+	auto a = m_grayImgs[0].at<uint8_t>(trueY, trueX);
+	auto b = m_grayImgs[1].at<uint8_t>(trueY, trueX);
+	auto c = m_grayImgs[2].at<uint8_t>(trueY, trueX);
+	auto d = m_grayImgs[3].at<uint8_t>(trueY, trueX);
 	reflectanceMap->colorPixels(a, b, c, d);
+
+	Mat& mask0 = m_masks[0][m_grayImgs[0].at<uint8_t>(y, x)];
+	Mat& mask1 = m_masks[1][m_grayImgs[1].at<uint8_t>(y, x)];
+	Mat& mask2 = m_masks[2][m_grayImgs[2].at<uint8_t>(y, x)];
+	Mat& mask3 = m_masks[3][m_grayImgs[3].at<uint8_t>(y, x)];
+
+	Mat mask01, mask02, mask03, mask12, mask13, mask23;
+
+	cv::bitwise_and(mask0, mask1, mask01);
+	cv::bitwise_and(mask0, mask2, mask02);
+	cv::bitwise_and(mask0, mask3, mask03);
+	cv::bitwise_and(mask1, mask2, mask12);
+	cv::bitwise_and(mask1, mask3, mask13);
+	cv::bitwise_and(mask2, mask3, mask23);
+
+	array<const Mat*, 6> masks = { &mask01, &mask02, &mask03, &mask12, &mask13, &mask23 };
+	array<pair<int, int>, 6> maskIndices = { {{0,1}, {0,2}, {0,3}, {1,2}, {1,3}, {2,3}} };
+
+	vector<Point> finalPoints;
+	vector<Point> tentativePoints;
+
+	for (int i = 0; i < 6; i++) {
+		const Mat& mask = *masks[i];
+		int height = mask.size().height;
+		int width = mask.size().width;
+		int up{}, right{}, down{}, left{};
+		// normalization lambda
+		auto norm = [height, width](Point& pt) { return Point2d(pt.x / (double)width, pt.y / (double)height); };
+
+		Rect boundaries = boundingRect(mask);
+		// if 
+		if (boundaries.empty()) {
+			findClosestPair(m_masks[i][maskIndices[i].first], m_masks[i][maskIndices[i].second]);
+		}
+		else {
+			// find furthest points
+		}
+
+	}
+
+
 }
 
 void MainWindow::onSwapped(int first, int second)
 {
-	auto tmp = m_imgs[first];
-	m_imgs[first] = m_imgs[second];
-	m_imgs[second] = tmp;
-
-	tmp = m_grayImgs[first];
-	m_grayImgs[first] = m_grayImgs[second];
-	m_grayImgs[second] = tmp;
+	swap(m_imgs[first], m_imgs[second]);
+	swap(m_grayImgs[first], m_grayImgs[second]);
 }
 
 void MainWindow::calculateMasks() {
 	for (int n = 0; n < 4; n++) {
-		auto img = m_grayMaps[n];
+		auto& img = m_grayMaps[n];
 		for (int i = 0; i < 256; i++) {
 			auto& mask = m_masks[n][i];
 			mask = Mat::zeros(img.size(), CV_8U);
@@ -138,4 +172,9 @@ void MainWindow::calculateMasks() {
 			);
 		}
 	}
+}
+
+cv::Point MainWindow::findClosestPair(const Mat& first, const Mat& second)
+{
+	return cv::Point();
 }

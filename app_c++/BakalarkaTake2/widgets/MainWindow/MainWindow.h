@@ -23,6 +23,8 @@ protected:
 	
 	void calculateMasks();
 
+	cv::Point findClosestPair(const cv::Mat& first, const cv::Mat& second);
+
 	std::array<std::array<cv::Mat, 256>, 4> m_masks;
 
 	std::array<cv::Mat, 4> m_maps;

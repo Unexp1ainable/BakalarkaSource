@@ -354,6 +354,9 @@ class MainWindow(QMainWindow):
         y = y*2-1
         dx = -x/(np.sqrt(-x**2-y**2+1))
         dy = -y/(np.sqrt(-x**2-y**2+1))
+        print("--------------")
+        print(x, y)
+        print(np.rad2deg(np.arcsin(x)), np.rad2deg(np.arcsin(y)))
         return dx, dy
 
     def calculateMasks(self):
