@@ -2,3 +2,6 @@
 __pycache__
 .vs
 build
+output
+ellipses
+asc.png
