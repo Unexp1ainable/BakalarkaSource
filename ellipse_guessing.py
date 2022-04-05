@@ -187,12 +187,12 @@ def fit_a(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
           height, width) -> Tuple[float, float, float, float]:
     lastRank = rank_ellipse(a, b, c, k, points, height, width)
     # determine direction
-    currRank = rank_ellipse(a + STEP_A, b, c, k, points, height, width)
+    currRank = rank_ellipse(a - STEP_A, b, c, k, points, height, width)  # - to promote lower a
     if lastRank < currRank:
-        DIR_A = DOWN
-    else:
         DIR_A = UP
-        a += STEP_A
+    else:
+        DIR_A = DOWN
+        a -= STEP_A
 
     while True:
         lastRank = currRank
@@ -240,12 +240,16 @@ def fit_b(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
                 break
             else:
                 b += STEP_B
+                if b > height:
+                    break
         else:
             currRank = rank_ellipse(a, b - STEP_B, c, k, points, height, width)
             if lastRank < currRank:
                 break
             else:
                 b -= STEP_B
+                if b < STEP_B:
+                    break
 
         # dimg = img.copy()
         # draw_ellipse(dimg, a, b, c, k)
@@ -274,11 +278,15 @@ def fit_c(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
                 break
             else:
                 c += STEP_C
+                if c > 1.5:
+                    break
         else:
             currRank = rank_ellipse(a, b, c - STEP_C, k, points, height, width)
             if lastRank < currRank:
                 break
             else:
+                if c - STEP_C <= -0.95:
+                    break
                 c -= STEP_C
 
         # dimg = img.copy()
@@ -351,7 +359,7 @@ def fit_ellipse(img: np.ndarray, value: int = None) -> Tuple[float, float, float
     points = np.argwhere(img)
 
     a = round((bounds[2]-bounds[0])*0.5)
-    b = round((bounds[3]-bounds[1])*0.5 + 10)  # +10 to prefer bigger ellipses
+    b = round((bounds[3]-bounds[1])*0.6)  # 0.6 to prefer bigger ellipses
     c = 0
     k = -bounds[1]
 
