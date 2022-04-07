@@ -1,5 +1,6 @@
-from math import isclose, sqrt
+from math import isclose, log, sqrt
 from multiprocessing.synchronize import Lock
+from os import mkdir
 from typing import List, Tuple
 import cv2 as cv
 import numpy as np
@@ -184,7 +185,7 @@ def get_bounds(img):
 
 
 def fit_a(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
-          height, width) -> Tuple[float, float, float, float]:
+          height, width, val) -> Tuple[float, float, float, float]:
     lastRank = rank_ellipse(a, b, c, k, points, height, width)
     # determine direction
     currRank = rank_ellipse(a - STEP_A, b, c, k, points, height, width)  # - to promote lower a
@@ -213,16 +214,32 @@ def fit_a(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
                 if a < STEP_A:
                     break
 
-        # dimg = img.copy()
-        # draw_ellipse(dimg, a, b, c, k)
-        # cv.imshow("tmp", dimg)
-        # cv.waitKey(1)
-
+    # dimg = img.copy()
+    # draw_ellipse(dimg, a, b, c, k)
+    # cv.imshow("tmp", dimg)
+    # cv.waitKey(1)
     return a
+
+    # coefa = 51
+    # coefb = 220
+    # coefc = 14
+    # return coefa*log(-val+coefb, 10)-coefc
+    # boundary = 120
+    # if val >= boundary:
+    #     coefa = 0.7
+    #     coefb = 117
+    #     coefr = 7300
+    #     res = 0
+    #     try:
+    #         res = sqrt(coefr-coefa*(val-coefb)**2)
+    #     except:
+    #         pass
+    #     return res
+    # else:
 
 
 def fit_b(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
-          height, width) -> Tuple[float, float, float, float]:
+          height, width, val) -> Tuple[float, float, float, float]:
     lastRank = rank_ellipse(a, b, c, k, points, height, width)
     # determine direction
     currRank = rank_ellipse(a, b + STEP_B, c, k, points, height, width)
@@ -260,7 +277,7 @@ def fit_b(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
 
 
 def fit_c(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
-          height, width) -> Tuple[float, float, float, float]:
+          height, width, val) -> Tuple[float, float, float, float]:
     lastRank = rank_ellipse(a, b, c, k, points, height, width)
     # determine direction
     currRank = rank_ellipse(a, b, c + STEP_C, k, points, height, width)
@@ -298,7 +315,7 @@ def fit_c(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
 
 
 def fit_k(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
-          height, width) -> Tuple[float, float, float, float]:
+          height, width, val) -> Tuple[float, float, float, float]:
     lastRank = rank_ellipse(a, b, c, k, points, height, width)
     # determine direction
     currRank = rank_ellipse(a, b, c, k + STEP_K, points, height, width)
@@ -331,10 +348,10 @@ def fit_k(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
     return k
 
 
-def fit_ellipse(img: np.ndarray, value: int = None) -> Tuple[float, float, float, float]:
-    global lock
+def fit_ellipse(img: np.ndarray, value: int = None, name: str = "") -> Tuple[float, float, float, float]:
     if type(img) == tuple:  # multiprocessing arguments
         value = img[1]
+        name = img[2]
         img = img[0]
 
     print("Started with value ", value)
@@ -354,7 +371,7 @@ def fit_ellipse(img: np.ndarray, value: int = None) -> Tuple[float, float, float
     bounds = get_bounds(img)
     if bounds[0] >= bounds[2] or bounds[1] >= bounds[3]:
         print("Error, no pixels of interest. " + str(value))
-        exit(1)
+        return (0., 0., 0., 0.)
 
     points = np.argwhere(img)
 
@@ -374,10 +391,10 @@ def fit_ellipse(img: np.ndarray, value: int = None) -> Tuple[float, float, float
         olda = a
         oldc = c
         oldk = k
-        a = fit_a(a, b, c, k, points, height, width)
-        b = fit_b(a, b, c, k, points, height, width)
-        c = fit_c(a, b, c, k, points, height, width)
-        k = fit_k(a, b, c, k, points, height, width)
+        a = fit_a(a, b, c, k, points, height, width, value)
+        b = fit_b(a, b, c, k, points, height, width, value)
+        c = fit_c(a, b, c, k, points, height, width, value)
+        k = fit_k(a, b, c, k, points, height, width, value)
         # print(a, b, c, k)
 
         convergence = isclose(olda, a) and isclose(oldb, b, abs_tol=0.001) and isclose(oldc, c) and isclose(oldk, k)
@@ -387,10 +404,15 @@ def fit_ellipse(img: np.ndarray, value: int = None) -> Tuple[float, float, float
 
     print("convergence reached " + str(value))
     draw_ellipse(img, a, b, c, k)
-    cv.imwrite("output/img" + str(value) + ".png", img)
+
+    outdir = "output/"
+    if name:
+        outdir = "output/" + name[:-4] + "/"
+
+    cv.imwrite(outdir + "img" + str(value) + ".png", img)
 
     try:
-        with open("output.csv", "a") as file:
+        with open(outdir + "output.csv", "a") as file:
             file.write(str(value) + ";" + str(a) + ";" + str(b) + ";" + str(c) + ";" + str(k) + "\n")
     except:
         print("Fitted for " + str(value) + ": a=" + str(a) + ", b=" + str(b) + ", c=" + str(c) + ", k=" + str(k) + "\n")
@@ -398,12 +420,12 @@ def fit_ellipse(img: np.ndarray, value: int = None) -> Tuple[float, float, float
 
 
 if __name__ == "__main__":
-    PATH = "C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/Q1-5k-upravene/5kV_105_1_u.png"
-    VALUE = 196
+    PATH = "C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/Q1-upravene/all/5kV_105_1_u.png"
+    VALUE = 100
 
     global img
-    img = cv.imread("asc.png", cv.IMREAD_GRAYSCALE)
-    img = ndimage.rotate(img, -8)
+    img = cv.imread(PATH, cv.IMREAD_GRAYSCALE)
+    img = ndimage.rotate(img, -11)
     img = cv.resize(img, (200, 200))
 
     pimg = img.copy()
@@ -418,7 +440,7 @@ if __name__ == "__main__":
     kernel[kernelsize//2][kernelsize//2] = kernelsize**2
     img = cv.filter2D(img, -1, kernel)
     _, img = cv.threshold(img, kernelsize**2+neighbourPixelCount-1, 255, cv.THRESH_BINARY)
-    res = fit_ellipse(pimg, VALUE)
+    res = fit_ellipse(pimg, VALUE, "ba.png")
 
     img = img == VALUE
     img = img.astype(np.uint8) * 255

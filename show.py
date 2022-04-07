@@ -31,16 +31,19 @@ if __name__ == "__main__":
     #         plt.show()
 
     t = res.T
-    plot = plt.subplot(2, 2, 1,)
     plt.title("a")
     plt.plot(t[0])
-    plot = plt.subplot(2, 2, 2)
+    plt.figure()
+
     plt.title("b")
     plt.plot(t[1])
-    plot = plt.subplot(2, 2, 3)
+    plt.figure()
+
     plt.title("c")
     plt.plot(t[2])
-    plot = plt.subplot(2, 2, 4)
+    plt.figure()
+
     plt.title("k")
     plt.plot(t[3])
+
     plt.show()
