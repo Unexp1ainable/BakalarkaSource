@@ -3,47 +3,53 @@ from matplotlib import pyplot as plt
 import numpy as np
 
 if __name__ == "__main__":
-    h = 200
-    w = 200
+    ress = []
 
-    res = np.zeros((256, 4), np.float64)
-    with open("output.csv") as file:
-        for line in file:
-            try:
-                value, a, b, c, k = line.split(";")
-                a = float(a)
-                b = float(b)
-                c = float(c)
-                k = float(k)
-                res[int(value)] = (a, b, c, k)
+    files = [
+        "output/5kV_105_1_u/output.csv",
+        "output/5kV_125_1_u/output.csv",
+        "output/5kV_145_1_u/output.csv",
+        "output/5kV_165_1_u/output.csv",
+        "output/5kV_185_1_u/output.csv",
+        "output/5kV_205_1_u/output.csv",
+    ]
+    for path in files:
+        res = np.zeros((256, 4), np.float64)
+        with open(path) as file:
+            for line in file:
+                try:
+                    value, a, b, c, k = line.split(";")
+                    a = float(a)
+                    b = float(b)
+                    c = float(c)
+                    k = float(k)
+                    res[int(value)] = (a, b, c, k)
 
-            except:
-                pass
+                except:
+                    pass
+        ress.append(res.T.copy())
 
-    # for i in range(256):
-    #     if res[i].any():
-    #         a, b, c, k = res[i]
-    #         points = raster_ellipse(float(a), float(b), float(c), float(k), h, w)
-    #         plt.xlim(0, w)
-    #         plt.ylim(0, h)
-    #         plt.title(str(i))
-    #         plt.scatter(*zip(*points))
-    #         plt.show()
-
-    t = res.T
     plt.title("a")
-    plt.plot(t[0])
+    for i, t in enumerate(ress):
+        plt.plot(t[0], label=files[i])
+    plt.legend()
     plt.figure()
 
     plt.title("b")
-    plt.plot(t[1])
+    for i, t in enumerate(ress):
+        plt.plot(t[1], label=files[i])
+    plt.legend()
     plt.figure()
 
     plt.title("c")
-    plt.plot(t[2])
+    for i, t in enumerate(ress):
+        plt.plot(t[2], label=files[i])
+    plt.legend()
     plt.figure()
 
     plt.title("k")
-    plt.plot(t[3])
+    for i, t in enumerate(ress):
+        plt.plot(t[3], label=files[i])
 
+    plt.legend()
     plt.show()
