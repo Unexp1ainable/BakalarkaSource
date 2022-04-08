@@ -333,12 +333,16 @@ def fit_k(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
                 break
             else:
                 k += STEP_K
+                if k > height:
+                    break
         else:
             currRank = rank_ellipse(a, b, c, k - STEP_K, points, height, width)
             if lastRank < currRank:
                 break
             else:
                 k -= STEP_K
+                if k < -height:
+                    break
 
         # dimg = img.copy()
         # draw_ellipse(dimg, a, b, c, k)
