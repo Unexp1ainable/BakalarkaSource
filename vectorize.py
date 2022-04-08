@@ -1,5 +1,5 @@
 from os import mkdir
-from ellipse_guessing import fit_ellipse
+from ellipse_guessing import fit_ellipse, preprocessing
 import multiprocessing as mp
 import cv2 as cv
 from scipy import ndimage
@@ -29,10 +29,8 @@ if __name__ == "__main__":
             if img is None:
                 print("Image does not exist.")
             else:
-                img = ndimage.rotate(img, -8)
-                img = cv.resize(img, (200, 200))
+                img = preprocessing(img, size=(1024, 1024))
 
-                lock = mp.Lock()
                 with open(outdir + "output.csv", "w") as f:
                     f.write("--- algorithm has started ---\n")
                     f.write("value;a;b;c;k\n")

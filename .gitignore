@@ -3,6 +3,8 @@ __pycache__
 .vs
 build
 output
+output_tmp
+tmp
 ellipses
 asc.png
 logs

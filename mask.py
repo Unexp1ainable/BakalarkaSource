@@ -18,4 +18,6 @@ if __name__ == "__main__":
     mask: np.ndarray = img == args.value
     mask = mask.astype(np.uint8)
     mask *= 255
-    cv.imwrite(args.output, mask)
+    cv.imshow(args.output, mask)
+    cv.waitKey(0)
+    cv.destroyAllWindows()

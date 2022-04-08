@@ -7,13 +7,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy import ndimage
 from skimage.morphology import skeletonize
+from numba import jit
 
 UP = True
 DOWN = False
 
-STEP_A = 1
-STEP_B = 1
-STEP_C = 0.05
+STEP_A = 2
+STEP_B = 2
+STEP_C = 0.1
 STEP_K = 0.5
 
 DIR_A = None
@@ -21,67 +22,40 @@ DIR_B = None
 DIR_C = None
 DIR_K = None
 
-MAX_ITERATIONS = 25
+ROUGH_ITERATIONS = 10
+SMOOTH_ITERATIONS = 10
+VISUALIZE = False
 
 
 def draw_ellipse(img: np.ndarray, a: float, b: float, c: float, k: float) -> None:
-    A = c
-    B = a**2
-    C = -2*k*b*c+k**2*c+b**2*c+b**2
-    D = -2*c*k+2*b*c
-    E = -2*k*a**2+2*b*a**2
-    F = -2*k*b*a**2+k**2*a**2
-
-    hx = img.shape[1]//2
-
-    ystart = 0
-    yend = img.shape[0]-1
-    xstart = int((img.shape[1]-a*2)//2)
-    xend = round(xstart+a*2)+1
-    if xstart < 0:
-        xstart = 0
-    if xend >= img.shape[1]:
-        xend = img.shape[1]
-
-    for y in range(ystart, -yend, -1):
-        try:
-            xs = np.roots((A*y**2+C+D*y, 0, E*y+B*y**2+F))
-        except:
-            continue
-
-        if len(xs) < 1 or np.iscomplex(xs)[0]:
-            continue
-        x = round(xs[0])+hx
-        if xstart <= x < xend:
-            img[-y][x] = 255
-
-        if len(xs) == 1:
-            continue
-        x = round(xs[1])+hx
-        if xstart <= x < xend:
-            img[-y][x] = 255
-
-    for x in range(xstart, xend):
-        x -= hx
-        try:
-            ys = np.roots((B+A*x**2, D*x**2+E, C*x**2+F))
-        except:
-            continue
-
-        if len(ys) < 1 or np.iscomplex(ys)[0]:
-            continue
-        y = -round(ys[0])
-        if ystart <= y < yend:
-            img[y][x+hx] = 255
-
-        if len(ys) == 1:
-            continue
-        y = -round(ys[1])
-        if ystart <= y < yend:
-            img[y][x+hx] = 255
+    w = img.shape[1]
+    h = img.shape[0]
+    points = raster_ellipse(a, b, c, k, h, w)
+    if len(points) == 0:
+        return
+    for x, y in points:
+        if 0 <= x < w and 0 <= y < h:
+            img[y][x] = 255
 
 
+@jit(nopython=True)
+def roots(a, b, c):
+    if a == 0:
+        return (0, 0., 0.)
+    D = b**2-4*a*c
+    if D < 0:
+        return (0, 0., 0.)
+    if D == 0:
+        return (1, -b/(2*a), 0.)
+    else:
+        sD = sqrt(D)
+        return (2, (-b+sD)/(2*a), (-b-sD)/(2*a))
+
+
+@jit(nopython=True)
 def raster_ellipse(a: float, b: float, c: float, k: float, height: int, width: int):
+    if a == 0 or b == 0:
+        return np.empty((0, 0), np.int64)
     result = []
     A = c
     B = a**2
@@ -92,51 +66,43 @@ def raster_ellipse(a: float, b: float, c: float, k: float, height: int, width: i
 
     hx = width//2
 
-    ystart = 0
-    yend = height
-    xstart = int((width-a*2)//2)
-    xend = round(xstart+a*2)
+    ystart = round(k)
+    yend = round(b*2) - ystart
+    xstart = round(-a)
+    xend = round(a)
 
     for y in range(ystart, -yend, -1):
-        try:
-            xs = np.roots((A*y**2+C+D*y, 0, E*y+B*y**2+F))
-        except:
-            continue
+        n, x1, x2 = roots(A*y**2+C+D*y, 0, E*y+B*y**2+F)
 
-        if len(xs) < 1 or np.iscomplex(xs)[0]:
+        if n < 1:
             continue
-        x = round(xs[0])+hx
-        if xstart <= x < xend:
-            result.append((x, -y))
+        x = round(x1)+hx
+        result.append((x, -y))
 
-        if len(xs) == 1:
+        if n == 1:
             continue
-        x = round(xs[1])+hx
-        if xstart <= x < xend:
-            result.append((x, -y))
+        x = round(x2)+hx
+        result.append((x, -y))
 
     for x in range(xstart, xend):
-        x -= hx
-        try:
-            ys = np.roots((B+A*x**2, D*x**2+E, C*x**2+F))
-        except:
-            continue
+        n, y1, y2 = roots(B+A*x**2, D*x**2+E, C*x**2+F)
 
-        if len(ys) < 1 or np.iscomplex(ys)[0]:
+        if n < 1:
             continue
-        y = -round(ys[0])
-        if ystart <= y < yend and (x+hx, y) not in result:
+        y = -round(y1)
+        if (x+hx, y) not in result:
             result.append((x+hx, y))
 
-        if len(ys) == 1:
+        if n == 1:
             continue
-        y = -round(ys[1])
-        if ystart <= y < yend and (x+hx, y) not in result:
+        y = -round(y2)
+        if (x+hx, y) not in result:
             result.append((x+hx, y))
-    return result
+    return np.array(result, np.int64)
 
 
-def rank_point(ellipsePoints: List[Tuple[int, int]], x: int, y: int):
+@jit(nopython=True)
+def rank_point(ellipsePoints: np.ndarray, x: int, y: int):
     lowestDist = 99999999
     for xp, yp in ellipsePoints:
         d = (x-xp)**2+(y-yp)**2
@@ -145,6 +111,7 @@ def rank_point(ellipsePoints: List[Tuple[int, int]], x: int, y: int):
     return lowestDist
 
 
+@jit(nopython=True)
 def rank_ellipse(a, b, c, k, maskPoints, height, width):
     rank = 0
     ellipsePoints = raster_ellipse(a, b, c, k, height, width)
@@ -153,6 +120,7 @@ def rank_ellipse(a, b, c, k, maskPoints, height, width):
     return rank
 
 
+@jit(nopython=True)
 def get_bounds(img):
     height = img.shape[0]
     width = img.shape[1]
@@ -184,6 +152,14 @@ def get_bounds(img):
     return (left, up, right, down)
 
 
+def show(a, b, c, k):
+    dimg = img.copy()
+    draw_ellipse(dimg, a, b, c, k)
+    cv.imshow("tmp", dimg)
+    cv.waitKey(1)
+
+
+@jit(nopython=True)
 def fit_a(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
           height, width, val) -> Tuple[float, float, float, float]:
     lastRank = rank_ellipse(a, b, c, k, points, height, width)
@@ -214,30 +190,24 @@ def fit_a(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
                 if a < STEP_A:
                     break
 
-    # dimg = img.copy()
-    # draw_ellipse(dimg, a, b, c, k)
-    # cv.imshow("tmp", dimg)
-    # cv.waitKey(1)
+    # if VISUALIZE:
+    #     show(a, b, c, k)
     return a
 
-    # coefa = 51
-    # coefb = 220
-    # coefc = 14
-    # return coefa*log(-val+coefb, 10)-coefc
-    # boundary = 120
-    # if val >= boundary:
-    #     coefa = 0.7
-    #     coefb = 117
-    #     coefr = 7300
-    #     res = 0
-    #     try:
-    #         res = sqrt(coefr-coefa*(val-coefb)**2)
-    #     except:
-    #         pass
+    # rp = 91
+    # ap = 1.13
+    # bp = 135
+    # fp = 55
+    # gp = 1.5
+
+    # try:
+    #     res = sqrt(rp**2-ap*(val-bp)**2)*(1+fp/val)*1/gp
     #     return res
-    # else:
+    # except:
+    #     return 0
 
 
+@jit(nopython=True)
 def fit_b(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
           height, width, val) -> Tuple[float, float, float, float]:
     lastRank = rank_ellipse(a, b, c, k, points, height, width)
@@ -268,14 +238,12 @@ def fit_b(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
                 if b < STEP_B:
                     break
 
-        # dimg = img.copy()
-        # draw_ellipse(dimg, a, b, c, k)
-        # cv.imshow("tmp", dimg)
-        # cv.waitKey(1)
-
+        if VISUALIZE:
+            show(a, b, c, k)
     return b
 
 
+@jit(nopython=True)
 def fit_c(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
           height, width, val) -> Tuple[float, float, float, float]:
     lastRank = rank_ellipse(a, b, c, k, points, height, width)
@@ -306,14 +274,13 @@ def fit_c(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
                     break
                 c -= STEP_C
 
-        # dimg = img.copy()
-        # draw_ellipse(dimg, a, b, c, k)
-        # cv.imshow("tmp", dimg)
-        # cv.waitKey(1)
+        if VISUALIZE:
+            show(a, b, c, k)
 
     return c
 
 
+@jit(nopython=True)
 def fit_k(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
           height, width, val) -> Tuple[float, float, float, float]:
     lastRank = rank_ellipse(a, b, c, k, points, height, width)
@@ -344,15 +311,29 @@ def fit_k(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
                 if k < -height:
                     break
 
-        # dimg = img.copy()
-        # draw_ellipse(dimg, a, b, c, k)
-        # cv.imshow("tmp", dimg)
-        # cv.waitKey(1)
+        if VISUALIZE:
+            show(a, b, c, k)
 
     return k
 
 
+def processing(img, value):
+    img = img == value
+    img = skeletonize(img)
+
+    img = img.astype(np.uint8)
+    # filter lone pixels
+    kernelsize = 11
+    neighbourPixelCount = 2
+    kernel = np.ones((kernelsize, kernelsize), np.uint8)
+    kernel[kernelsize//2][kernelsize//2] = kernelsize**2
+    img = cv.filter2D(img, -1, kernel)
+    _, img = cv.threshold(img, kernelsize**2+neighbourPixelCount-1, 255, cv.THRESH_BINARY)
+    return img
+
+
 def fit_ellipse(img: np.ndarray, value: int = None, name: str = "") -> Tuple[float, float, float, float]:
+    global STEP_A, STEP_B, STEP_C
     if type(img) == tuple:  # multiprocessing arguments
         value = img[1]
         name = img[2]
@@ -360,17 +341,7 @@ def fit_ellipse(img: np.ndarray, value: int = None, name: str = "") -> Tuple[flo
 
     print("Started with value ", value)
     if value is not None:
-        img = img == value
-        img = skeletonize(img)
-
-        img = img.astype(np.uint8)
-        # filter lone pixels
-        kernelsize = 11
-        neighbourPixelCount = 2
-        kernel = np.ones((kernelsize, kernelsize), np.uint8)
-        kernel[kernelsize//2][kernelsize//2] = kernelsize**2
-        img = cv.filter2D(img, -1, kernel)
-        _, img = cv.threshold(img, kernelsize**2+neighbourPixelCount-1, 255, cv.THRESH_BINARY)
+        img = processing(img, value)
 
     bounds = get_bounds(img)
     if bounds[0] >= bounds[2] or bounds[1] >= bounds[3]:
@@ -378,17 +349,16 @@ def fit_ellipse(img: np.ndarray, value: int = None, name: str = "") -> Tuple[flo
         return (0., 0., 0., 0.)
 
     points = np.argwhere(img)
+    height = img.shape[0]
+    width = img.shape[1]
 
     a = round((bounds[2]-bounds[0])*0.5)
-    b = round((bounds[3]-bounds[1])*0.6)  # 0.6 to prefer bigger ellipses
+    b = a/2
     c = 0
     k = -bounds[1]
 
     convergence = False
     i = 0
-
-    height = img.shape[0]
-    width = img.shape[1]
 
     while not convergence:
         oldb = b
@@ -399,10 +369,37 @@ def fit_ellipse(img: np.ndarray, value: int = None, name: str = "") -> Tuple[flo
         b = fit_b(a, b, c, k, points, height, width, value)
         c = fit_c(a, b, c, k, points, height, width, value)
         k = fit_k(a, b, c, k, points, height, width, value)
+
+        if a == 0:
+            return
         # print(a, b, c, k)
 
         convergence = isclose(olda, a) and isclose(oldb, b, abs_tol=0.001) and isclose(oldc, c) and isclose(oldk, k)
-        if i >= MAX_ITERATIONS:
+        if i >= ROUGH_ITERATIONS:
+            break
+        i += 1
+
+    convergence = False
+    i = 0
+    STEP_A /= 2
+    STEP_B /= 2
+    STEP_C /= 2
+    while not convergence:
+        oldb = b
+        olda = a
+        oldc = c
+        oldk = k
+        a = fit_a(a, b, c, k, points, height, width, value)
+        b = fit_b(a, b, c, k, points, height, width, value)
+        c = fit_c(a, b, c, k, points, height, width, value)
+        k = fit_k(a, b, c, k, points, height, width, value)
+
+        if a == 0:
+            return
+        # print(a, b, c, k)
+
+        convergence = isclose(olda, a) and isclose(oldb, b, abs_tol=0.001) and isclose(oldc, c) and isclose(oldk, k)
+        if i >= SMOOTH_ITERATIONS:
             break
         i += 1
 
@@ -423,31 +420,31 @@ def fit_ellipse(img: np.ndarray, value: int = None, name: str = "") -> Tuple[flo
     return (a, b, c, k)
 
 
+def preprocessing(img, angle=-11, size=(200, 200)):
+    img = ndimage.rotate(img, angle)
+    img = cv.resize(img, size)
+    return img
+
+
 if __name__ == "__main__":
     PATH = "C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/Q1-upravene/all/5kV_105_1_u.png"
-    VALUE = 100
+    VALUE = 23
+    VISUALIZE = True
+    ANGLE = -11
 
     global img
     img = cv.imread(PATH, cv.IMREAD_GRAYSCALE)
-    img = ndimage.rotate(img, -11)
-    img = cv.resize(img, (200, 200))
+    img = preprocessing(img, ANGLE)
+    imgcopy = img.copy()
+    img: np.ndarray = processing(img, VALUE)  # prepare visualizing image
 
-    pimg = img.copy()
-    img = img == VALUE
-    img = skeletonize(img)
-    img = img.astype(np.uint8)
+    shap = img.shape
+    img.resize((shap[0]+150, shap[1]), refcheck=False)
+    res = fit_ellipse(imgcopy, VALUE, "ba.png")
 
-    # filter lone pixels
-    kernelsize = 11
-    neighbourPixelCount = 2
-    kernel = np.ones((kernelsize, kernelsize), np.uint8)
-    kernel[kernelsize//2][kernelsize//2] = kernelsize**2
-    img = cv.filter2D(img, -1, kernel)
-    _, img = cv.threshold(img, kernelsize**2+neighbourPixelCount-1, 255, cv.THRESH_BINARY)
-    res = fit_ellipse(pimg, VALUE, "ba.png")
+    # prepare final image
 
-    img = img == VALUE
-    img = img.astype(np.uint8) * 255
+    # draw final image
     draw_ellipse(img, *res)
     cv.imshow("fitted", img)
     cv.waitKey(0)
