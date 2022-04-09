@@ -1,4 +1,4 @@
-NAME = "log.txt"
+NAME = "Tools/scraper/log.txt"
 
 with open(NAME) as file:
     worked_on = []

@@ -6,502 +6,169 @@ Started with value  17
 Started with value  21
 Started with value  25
 Started with value  29
-Error, no pixels of interest. 9
-Started with value  10
 Started with value  33
-Error, no pixels of interest. 13
-Started with value  14
 Started with value  37
+Started with value  41
+Started with value  45
+Started with value  49
+Started with value  53
+Started with value  57
+Started with value  61
 Error, no pixels of interest. 17
 Started with value  18
-Error, no pixels of interest. 21
-Started with value  22
-Started with value  41
-Error, no pixels of interest. 25
-Started with value  26
-Error, no pixels of interest. 10
-Started with value  45
-Started with value  11
-Error, no pixels of interest. 29
-Error, no pixels of interest. 33
-Started with value  30
-Error, no pixels of interest. 14
-Started with value  34
-Started with value  15
 Error, no pixels of interest. 37
 Started with value  38
-Started with value  49
-Error, no pixels of interest. 18
-Started with value  19
-Error, no pixels of interest. 11
-Started with value  12
-Error, no pixels of interest. 26
-Started with value  27
-Error, no pixels of interest. 30
-Started with value  31
-Error, no pixels of interest. 41
-Started with value  42
-Error, no pixels of interest. 34
+Error, no pixels of interest. 21
+Started with value  22
+Error, no pixels of interest. 25
+Error, no pixels of interest. 13
+Started with value  14
+Error, no pixels of interest. 9
+Started with value  10
+Started with value  26
+Error, no pixels of interest. 29
+Started with value  30
 Error, no pixels of interest. 38
-Error, no pixels of interest. 45
 Started with value  39
 Error, no pixels of interest. 22
-Started with value  35
-Error, no pixels of interest. 15
-Started with value  16
+Error, no pixels of interest. 18
 Started with value  23
-Started with value  46
-Error, no pixels of interest. 49
-Started with value  50
+Started with value  19
+Error, no pixels of interest. 14
+Started with value  15
+Error, no pixels of interest. 26
+Started with value  27
+Error, no pixels of interest. 10
+Started with value  11
+Error, no pixels of interest. 30
+Started with value  31
+Error, no pixels of interest. 23
+Started with value  24
 Error, no pixels of interest. 19
 Started with value  20
-Error, no pixels of interest. 27
-Started with value  28
-Error, no pixels of interest. 12
-Started with value  53
-Error, no pixels of interest. 46
-Started with value  47
-Error, no pixels of interest. 16
-Error, no pixels of interest. 35
-Started with value  36
-Error, no pixels of interest. 31
 Error, no pixels of interest. 39
 Started with value  40
-Error, no pixels of interest. 50
-Started with value  51
-Error, no pixels of interest. 42
-Started with value  57
+Error, no pixels of interest. 11
+Started with value  12
+Error, no pixels of interest. 15
+Started with value  16
+Error, no pixels of interest. 31
 Started with value  32
+Error, no pixels of interest. 27
+Started with value  28
 Error, no pixels of interest. 20
-Started with value  43
-Started with value  61
-Error, no pixels of interest. 28
+Error, no pixels of interest. 24
 Started with value  65
-Error, no pixels of interest. 53
-Started with value  54
-Error, no pixels of interest. 32
-Error, no pixels of interest. 51
-Started with value  52
-Error, no pixels of interest. 47
-Started with value  48
-Error, no pixels of interest. 36
 Error, no pixels of interest. 40
-Error, no pixels of interest. 57
 Started with value  69
 Started with value  73
-Started with value  58
-Error, no pixels of interest. 43
+Error, no pixels of interest. 12
+Error, no pixels of interest. 32
 Started with value  77
-Started with value  44
+Error, no pixels of interest. 16
 Started with value  81
-Error, no pixels of interest. 61
-Started with value  62
-Error, no pixels of interest. 48
-Error, no pixels of interest. 58
-Started with value  59
 Started with value  85
-Error, no pixels of interest. 52
-Error, no pixels of interest. 44
+Error, no pixels of interest. 28
 Started with value  89
 Started with value  93
-Error, no pixels of interest. 62
-Started with value  63
-Error, no pixels of interest. 59
 Started with value  97
-Started with value  60
-Error, no pixels of interest. 63
-Started with value  64
-Error, no pixels of interest. 60
 Started with value  101
 Started with value  105
 Started with value  109
-convergence reached 64
 Started with value  113
-convergence reached 65
-Started with value  66
-convergence reached 69
-Started with value  70
-convergence reached 73
-Started with value  74
-convergence reached 77
-Started with value  78
-convergence reached 81
-Started with value  82
-convergence reached 85
-Started with value  86
-convergence reached 89
-Started with value  90
-convergence reached 109
-Started with value  110
-convergence reached 105
-Started with value  106
-convergence reached 101
-Started with value  102
-convergence reached 97
-Started with value  98
-convergence reached 66
-Started with value  67
-convergence reached 5
-Started with value  6
-Error, no pixels of interest. 6
-Started with value  7
-convergence reached 70
-Started with value  71
-convergence reached 74
-Started with value  75
-convergence reached 67
-Started with value  68
-convergence reached 78
-Started with value  79
-convergence reached 71
-Started with value  72
-convergence reached 93
-Started with value  94
-convergence reached 75
-Started with value  76
-convergence reached 68
-convergence reached 82
 Started with value  117
-Started with value  83
-convergence reached 79
-convergence reached 72
-Started with value  80
 Started with value  121
-convergence reached 76
 Started with value  125
-convergence reached 113
-Started with value  114
-convergence reached 86
-Started with value  87
-convergence reached 83
-Started with value  84
-convergence reached 90
-Started with value  91
-convergence reached 80
 Started with value  129
-convergence reached 87
-Started with value  88
-convergence reached 110
-convergence reached 106
-Started with value  111
-Started with value  107
-convergence reached 102
-Started with value  103
-convergence reached 91
-Started with value  92
-convergence reached 84
 Started with value  133
-convergence reached 1
-Started with value  2
-convergence reached 94
-Started with value  95
-convergence reached 88
 Started with value  137
-convergence reached 107
-Started with value  108
-convergence reached 114
-convergence reached 103
-Started with value  115
-Started with value  104
-convergence reached 98
-Started with value  99
-convergence reached 111
-Started with value  112
-convergence reached 92
 Started with value  141
-convergence reached 95
-Started with value  96
-convergence reached 54
-Started with value  55
-Error, no pixels of interest. 55
-Started with value  56
-Error, no pixels of interest. 56
 Started with value  145
-convergence reached 117
-Started with value  118
-convergence reached 121
-Started with value  122
-convergence reached 99
-Started with value  100
-convergence reached 125
-Started with value  126
-convergence reached 108
 Started with value  149
-convergence reached 129
-Started with value  130
-convergence reached 96
 Started with value  153
-convergence reached 112
 Started with value  157
-convergence reached 104
 Started with value  161
-convergence reached 100
 Started with value  165
-convergence reached 115
-Started with value  116
-convergence reached 133
-Started with value  134
-convergence reached 137
-Started with value  138
-convergence reached 7
-Started with value  8
-Error, no pixels of interest. 8
 Started with value  169
-convergence reached 141
-Started with value  142
-convergence reached 145
-Started with value  146
-convergence reached 2
-Started with value  3
-convergence reached 165
-Started with value  166
-convergence reached 169
-Started with value  170
-convergence reached 157
-Started with value  158
-convergence reached 149
-Started with value  150
-convergence reached 161
-Started with value  162
-convergence reached 3
-Started with value  4
-convergence reached 153
-Started with value  154
-convergence reached 146
-Started with value  147
-convergence reached 116
 Started with value  173
-convergence reached 4
 Started with value  177
-convergence reached 170
-Started with value  171
-convergence reached 118
-Started with value  119
-convergence reached 122
-Started with value  123
-convergence reached 126
-Started with value  127
-convergence reached 130
-Started with value  131
-convergence reached 134
-Started with value  135
-convergence reached 147
-Started with value  148
-convergence reached 177
-Started with value  178
-convergence reached 166
-Started with value  167
-convergence reached 138
-Started with value  139
-convergence reached 142
-Started with value  143
-convergence reached 171
-Started with value  172
-convergence reached 173
-Started with value  174
-convergence reached 158
-Started with value  159
-convergence reached 162
-Started with value  163
-convergence reached 150
-Started with value  151
-convergence reached 154
-Started with value  155
-convergence reached 148
 Started with value  181
-convergence reached 178
-Started with value  179
-convergence reached 172
 Started with value  185
-convergence reached 181
-Started with value  182
-convergence reached 174
-Started with value  175
-convergence reached 167
-Started with value  168
-convergence reached 179
-Started with value  180
-convergence reached 185
-Started with value  186
-convergence reached 123
-Started with value  124
-convergence reached 127
-Started with value  128
-convergence reached 119
-Started with value  120
-convergence reached 163
-Started with value  164
-convergence reached 135
-Started with value  136
-convergence reached 159
-Started with value  160
-convergence reached 131
-Started with value  132
-convergence reached 139
-Started with value  140
-convergence reached 143
-Started with value  144
-convergence reached 182
-Started with value  183
-convergence reached 155
-Started with value  156
-convergence reached 151
-Started with value  152
-convergence reached 186
-Started with value  187
-convergence reached 180
 Started with value  189
-convergence reached 175
-Started with value  176
-convergence reached 183
-Started with value  184
-convergence reached 189
-Started with value  190
-convergence reached 187
-Started with value  188
-convergence reached 168
 Started with value  193
-convergence reached 188
 Started with value  197
-convergence reached 197
-Started with value  198
-convergence reached 164
 Started with value  201
-convergence reached 198
-Started with value  199
-convergence reached 201
-Started with value  202
-convergence reached 202
-Started with value  203
-convergence reached 190
-Started with value  191
-convergence reached 199
-Started with value  200
-convergence reached 184
 Started with value  205
-convergence reached 203
-Started with value  204
-convergence reached 205
-Started with value  206
-convergence reached 193
-Started with value  194
-convergence reached 206
-Started with value  207
-convergence reached 207
-Started with value  208
-Error, no pixels of interest. 208
 Started with value  209
-Error, no pixels of interest. 209
-Started with value  210
-Error, no pixels of interest. 210
-Started with value  211
-Error, no pixels of interest. 211
-Started with value  212
-Error, no pixels of interest. 212
 Started with value  213
-convergence reached 204
-Error, no pixels of interest. 213
-Started with value  214
 Started with value  217
-Error, no pixels of interest. 214
-Started with value  215
-Error, no pixels of interest. 217
-Started with value  218
-Error, no pixels of interest. 215
-Started with value  216
-Error, no pixels of interest. 218
-Started with value  219
-Error, no pixels of interest. 216
 Started with value  221
-Error, no pixels of interest. 219
-Started with value  220
-Error, no pixels of interest. 221
-Started with value  222
-Error, no pixels of interest. 220
 Started with value  225
-Error, no pixels of interest. 222
-Started with value  223
+Started with value  229
+Started with value  233
+Started with value  237
+Started with value  241
+Started with value  245
 Error, no pixels of interest. 225
 Started with value  226
-Error, no pixels of interest. 223
-Started with value  224
-Error, no pixels of interest. 226
-Started with value  227
-convergence reached 132
-Error, no pixels of interest. 224
-Started with value  229
-Error, no pixels of interest. 227
-Started with value  228
-Started with value  233
 Error, no pixels of interest. 229
 Started with value  230
-Error, no pixels of interest. 228
-Started with value  237
+Error, no pixels of interest. 221
+Started with value  222
 Error, no pixels of interest. 233
-Started with value  234
-Error, no pixels of interest. 230
-Started with value  231
-convergence reached 194
-Started with value  195
+Error, no pixels of interest. 241
+Started with value  249
+Started with value  242
 Error, no pixels of interest. 237
 Started with value  238
-Error, no pixels of interest. 234
-Started with value  235
-Error, no pixels of interest. 231
-Started with value  232
-convergence reached 160
-Error, no pixels of interest. 235
-Started with value  236
-Started with value  241
-Error, no pixels of interest. 232
-Started with value  245
-Error, no pixels of interest. 238
-Started with value  239
-Error, no pixels of interest. 236
-Started with value  249
+Started with value  234
 Error, no pixels of interest. 245
 Started with value  246
-Error, no pixels of interest. 239
-Started with value  240
-Error, no pixels of interest. 241
-Started with value  242
-Error, no pixels of interest. 249
-Started with value  250
+Started with value  253
+Error, no pixels of interest. 226
+Started with value  227
+Error, no pixels of interest. 230
+Started with value  231
 Error, no pixels of interest. 246
 Started with value  247
-Error, no pixels of interest. 240
-Started with value  253
+Error, no pixels of interest. 249
+Error, no pixels of interest. 222
+Started with value  250
+Error, no pixels of interest. 253
+Error, no pixels of interest. 234
+Started with value  235
+Error, no pixels of interest. 238
+Started with value  254
+Started with value  223
+Error, no pixels of interest. 242
+Started with value  239
+Started with value  243
+Error, no pixels of interest. 227
+Started with value  228
+Error, no pixels of interest. 231
+Started with value  232
 Error, no pixels of interest. 247
 Started with value  248
 Error, no pixels of interest. 250
 Started with value  251
-Error, no pixels of interest. 242
-Started with value  243
-Error, no pixels of interest. 248
-Error, no pixels of interest. 253
-Started with value  254
+Error, no pixels of interest. 223
+Started with value  224
+Error, no pixels of interest. 235
+Started with value  236
+Error, no pixels of interest. 254
 Error, no pixels of interest. 243
+Started with value  255
+Error, no pixels of interest. 239
+Started with value  240
 Started with value  244
+Error, no pixels of interest. 228
+Error, no pixels of interest. 232
+Error, no pixels of interest. 248
+Error, no pixels of interest. 236
 Error, no pixels of interest. 251
 Started with value  252
-Error, no pixels of interest. 254
-Started with value  255
+Error, no pixels of interest. 240
 Error, no pixels of interest. 244
-Error, no pixels of interest. 252
+Error, no pixels of interest. 224
 Error, no pixels of interest. 255
-convergence reached 124
-convergence reached 191
-Started with value  192
-convergence reached 200
-convergence reached 195
-Started with value  196
-convergence reached 136
-convergence reached 120
-convergence reached 192
-convergence reached 196
-convergence reached 128
-convergence reached 140
-convergence reached 156
-convergence reached 176
-convergence reached 144
-convergence reached 152
+Error, no pixels of interest. 252

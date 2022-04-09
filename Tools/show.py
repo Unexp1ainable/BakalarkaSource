@@ -1,4 +1,3 @@
-from ellipse_guessing import raster_ellipse
 from matplotlib import pyplot as plt
 import numpy as np
 

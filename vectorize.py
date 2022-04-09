@@ -1,5 +1,6 @@
 from os import mkdir
-from ellipse_guessing import fit_ellipse, preprocessing
+# from ellipse_guessing import fit_ellipse, preprocessing
+from ellipse_interpolation import fit_ellipse, preprocessing
 import multiprocessing as mp
 import cv2 as cv
 from scipy import ndimage
@@ -9,8 +10,6 @@ import numpy as np
 def args(img, name):
     for i in range(1, 256):
         yield(img, i, name)
-
-    name = "5kV_105_1_u.png"
 
 
 if __name__ == "__main__":

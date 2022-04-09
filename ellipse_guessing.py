@@ -192,7 +192,7 @@ def fit_a(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
 
     # if VISUALIZE:
     #     show(a, b, c, k)
-    # return a
+    return a
 
 
 @jit(nopython=True)
@@ -226,8 +226,8 @@ def fit_b(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
                 if b < STEP_B:
                     break
 
-        if VISUALIZE:
-            show(a, b, c, k)
+        # if VISUALIZE:
+        #     show(a, b, c, k)
     return b
 
 
@@ -262,8 +262,8 @@ def fit_c(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
                     break
                 c -= STEP_C
 
-        if VISUALIZE:
-            show(a, b, c, k)
+        # if VISUALIZE:
+        #     show(a, b, c, k)
 
     return c
 
@@ -299,8 +299,8 @@ def fit_k(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
                 if k < -height:
                     break
 
-        if VISUALIZE:
-            show(a, b, c, k)
+        # if VISUALIZE:
+        #     show(a, b, c, k)
 
     return k
 
@@ -408,15 +408,15 @@ def fit_ellipse(img: np.ndarray, value: int = None, name: str = "") -> Tuple[flo
     return (a, b, c, k)
 
 
-def preprocessing(img, angle=-11, size=(200, 200)):
-    img = ndimage.rotate(img, angle)
+def preprocessing(img, angle=-11, size=(1024, 1024)):
+    img = ndimage.rotate(img, angle, reshape=False)
     img = cv.resize(img, size)
     return img
 
 
 if __name__ == "__main__":
     PATH = "C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/Q1-upravene/all/5kV_105_1_u.png"
-    VALUE = 23
+    VALUE = 120
     VISUALIZE = True
     ANGLE = -11
 
@@ -426,8 +426,8 @@ if __name__ == "__main__":
     imgcopy = img.copy()
     img: np.ndarray = processing(img, VALUE)  # prepare visualizing image
 
-    shap = img.shape
-    img.resize((shap[0]+150, shap[1]), refcheck=False)
+    # shap = img.shape
+    # img.resize((shap[0]+150, shap[1]), refcheck=False)
     res = fit_ellipse(imgcopy, VALUE, "ba.png")
 
     # prepare final image

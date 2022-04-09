@@ -2,7 +2,7 @@ from sys import stderr
 from cv2 import BORDER_CONSTANT
 import numpy as np
 import cv2 as cv
-from scipy.interpolate import CubicSpline
+from scipy.interpolate import CubicSpline, PchipInterpolator
 import re
 
 WNAME = "Builder"
@@ -10,7 +10,10 @@ H = 512
 W = 1024
 RESOLUTION = (H, W, 3)
 PATH = "output/5kV_105_1_u/output.csv"
-MODE = "a"
+MODE = "b"
+
+POINTS_N = 34
+POINT_GAP = 256/POINTS_N
 
 MODES = {"value": 0,
          "a": 1,
@@ -27,7 +30,7 @@ selected = None
 
 def prepare_canvas():
     img = np.full(RESOLUTION, BG_COLOR, np.uint8)
-    for i in range(0, 256, 15):
+    for i in np.arange(0, 256, POINT_GAP):
         cv.line(img, (round(i*WSCALE), 0), (round(i*WSCALE), H), (70, 70, 70), 1, )
 
     t = H/6
@@ -40,7 +43,7 @@ def finalize_canvas(img, m):
     img = cv.copyMakeBorder(img, BORDER, BORDER, BORDER, BORDER, BORDER_CONSTANT, value=(BG_COLOR, BG_COLOR, BG_COLOR))
     cv.line(img, (BORDER, H+BORDER), (W+BORDER, H+BORDER), (230, 230, 230), 1)
     cv.line(img, (BORDER, BORDER), (BORDER, H+BORDER), (230, 230, 230), 1)
-    for i in range(0, 256, 15):
+    for i in np.arange(0, 256, 15):
         tsize = cv.getTextSize(str(i), cv.FONT_HERSHEY_SIMPLEX, 0.5, 1)[0]
         cv.putText(img, str(i), (round(BORDER+i*WSCALE-tsize[0]//2), round(H+BORDER*2)-tsize[1]//2),
                    cv.FONT_HERSHEY_SIMPLEX, 0.5, (230, 230, 230),)
@@ -65,12 +68,16 @@ def make_template():
     global data
     data = np.zeros((256, 1), np.float64)
 
+    kcoef = 1   # I am lazy
+    if MODE == "k":
+        kcoef = -1
+
     with open(PATH) as file:
         for line in file:
             try:
                 tokens = line.strip().split(";")
                 x = int(tokens[0])
-                y = float(tokens[col])
+                y = kcoef*float(tokens[col])
                 data[x] = y
             except:
                 pass
@@ -155,9 +162,9 @@ if __name__ == "__main__":
     template = make_template()
 
     nodes = []
-    for i in range(0, 256, 15):
+    for i in np.arange(0, 256, POINT_GAP):
         x = round(i*WSCALE)
-        nodes.append((x, H-round(data[i][0]*HSCALE)))
+        nodes.append((x, H-round(data[round(i)][0]*HSCALE)))
 
     cv.namedWindow(WNAME)
     cv.setMouseCallback(WNAME, onMouseEvent)
@@ -167,7 +174,7 @@ if __name__ == "__main__":
         for x, y in nodes:
             cv.circle(img, (x+BORDER, y+BORDER), RADIUS, (0, 0, 255), 2)
 
-        spline = CubicSpline(*zip(*nodes))
+        spline = PchipInterpolator(*zip(*nodes))
         pts = spline(list(range(0, round(256*WSCALE), WSCALEI)))
         pt1 = (BORDER, round(pts[0])+BORDER)
         for x in range(WSCALEI, round(256*WSCALE), WSCALEI):
