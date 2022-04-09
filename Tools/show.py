@@ -7,11 +7,11 @@ if __name__ == "__main__":
 
     files = [
         "output/5kV_105_1_u/output.csv",
-        "output/5kV_125_1_u/output.csv",
-        "output/5kV_145_1_u/output.csv",
-        "output/5kV_165_1_u/output.csv",
-        "output/5kV_185_1_u/output.csv",
-        "output/5kV_205_1_u/output.csv",
+        # "output/5kV_125_1_u/output.csv",
+        # "output/5kV_145_1_u/output.csv",
+        # "output/5kV_165_1_u/output.csv",
+        # "output/5kV_185_1_u/output.csv",
+        # "output/5kV_205_1_u/output.csv",
     ]
     for path in files:
         res = np.zeros((256, 4), np.float64)

@@ -16,7 +16,7 @@ def args(img, name):
 if __name__ == "__main__":
     dir = "C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/Q1-upravene/all/"
 
-    with open("C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/Q1-upravene/all/list.txt") as f:
+    with open("C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/Q1-upravene/all/list2.txt") as f:
         for line in f:
             name = line.strip()
             outdir = "output/" + name[:-4] + "/"

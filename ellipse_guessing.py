@@ -192,19 +192,7 @@ def fit_a(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
 
     # if VISUALIZE:
     #     show(a, b, c, k)
-    return a
-
-    # rp = 91
-    # ap = 1.13
-    # bp = 135
-    # fp = 55
-    # gp = 1.5
-
-    # try:
-    #     res = sqrt(rp**2-ap*(val-bp)**2)*(1+fp/val)*1/gp
-    #     return res
-    # except:
-    #     return 0
+    # return a
 
 
 @jit(nopython=True)
