@@ -1,10 +1,18 @@
 from os import mkdir
-# from ellipse_guessing import fit_ellipse, preprocessing
-from ellipse_interpolation import fit_ellipse, preprocessing
 import multiprocessing as mp
 import cv2 as cv
 from scipy import ndimage
 import numpy as np
+
+INTERPOLATE = True
+FIT = False
+
+MODE = FIT
+
+if MODE:
+    from ellipse_interpolation import fit_ellipse, preprocessing
+else:
+    from ellipse_fitting import fit_ellipse, preprocessing
 
 
 def args(img, name):
