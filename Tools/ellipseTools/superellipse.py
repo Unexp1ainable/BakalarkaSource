@@ -1,6 +1,8 @@
+from matplotlib.transforms import Bbox
 import numpy as np
 import cv2 as cv
 from ellipse_common import *
+from scipy.spatial import KDTree
 import matplotlib.pyplot as plt
 
 BIG = 99999999999999
@@ -29,144 +31,207 @@ class Superellipse():
         self.k = k
         self.calculateBoundingBox()
 
+    def autoroots(self, x, y):
+        dx = x-self.bBox[0][0] if x-self.bBox[0][0] < self.bBox[1][0] - x else self.bBox[1][0] - x
+        dy = y-self.bBox[1][1] if y-self.bBox[1][1] < self.bBox[0][1] - y else self.bBox[0][1] - y
+
+        if dx < dy:
+            n, x1, x2 = rootsX(self.a, self.b, self.c, self.h, self.k, y)
+            nx = 0
+            if n == 0:
+                return None, None
+
+            if n == 1:
+                nx = x1
+            else:
+                if abs(x1-x) < abs(x2-x):
+                    nx = x1
+                else:
+                    nx = x2
+
+            return nx, y
+        else:
+            n, y1, y2 = rootsY(self.a, self.b, self.c, self.h, self.k, x)
+            ny = 0
+            if n == 0:
+                return None, None
+
+            if n == 1:
+                ny = y1
+            else:
+                if abs(y1-y) < abs(y2-y):
+                    ny = y1
+                else:
+                    ny = y2
+
+            return x, ny
+
     def rasterize(self):
         return raster_ellipse(self.a, self.b, self.c, self.h, self.k)
 
     def draw(self, img):
         return draw_ellipse(img, self.a, self.b, self.c, self.h, self.k)
 
+    def borderPointsGenerator(self):
+        """Generates points starting from the top middle to the right around whole ellipse
+        """
+        x, y = (-self.h, -self.k)
+        # 2nd top half
+        # print("top")
+        while (True):
+            yield x, y
+            x += 1
+            n, y1, y2 = rootsY(self.a, self.b, self.c, self.h, self.k, x)
+            ny = 0
+            if n == 0:
+                x -= 1
+                break
+            elif n == 1:
+                ny = y1
+            else:
+                ny = y1 if abs(y1-y) < abs(y2-y) else y2
+
+            if abs(y-ny) > 1:
+                x -= 1
+                break
+            y = ny
+
+        # right side
+        # print("right")
+        while (True):
+            y -= 1
+            n, x1, x2 = rootsX(self.a, self.b, self.c, self.h, self.k, y)
+            nx = 0
+            if n == 0:
+                y += 1
+                break
+            elif n == 1:
+                nx = x1
+            else:
+                nx = x1 if abs(x1-x) < abs(x2-x) else x2
+
+            if abs(x-nx) > 1:
+                y += 1
+                break
+            x = nx
+            yield x, y
+
+        # bottom side
+        # print("bottom")
+        while (True):
+            x -= 1
+            n, y1, y2 = rootsY(self.a, self.b, self.c, self.h, self.k, x)
+            ny = 0
+            if n == 0:
+                x += 1
+                break
+            elif n == 1:
+                ny = y1
+            else:
+                ny = y1 if abs(y1-y) < abs(y2-y) else y2
+
+            if abs(y-ny) > 1:
+                x += 1
+                break
+            y = ny
+            yield x, y
+
+        # left side
+        # print("left")
+        while (True):
+            y += 1
+            n, x1, x2 = rootsX(self.a, self.b, self.c, self.h, self.k, y)
+            nx = 0
+            if n == 0:
+                y -= 1
+                break
+            elif n == 1:
+                nx = x1
+            else:
+                nx = x1 if abs(x1-x) < abs(x2-x) else x2
+
+            if abs(x-nx) > 1:
+                y -= 1
+                break
+            x = nx
+            yield x, y
+
+        # 1st top half
+        # print("top")
+        while (x < -self.h):
+            x += 1
+            n, y1, y2 = rootsY(self.a, self.b, self.c, self.h, self.k, x)
+            ny = 0
+            if n == 0:
+                x -= 1
+                break
+            elif n == 1:
+                ny = y1
+            else:
+                ny = y1 if abs(y1-y) < abs(y2-y) else y2
+
+            if abs(y-ny) > 1:
+                x -= 1
+                break
+            y = ny
+            yield x, y
+
+    def findClosestPoints(self, el2: "Superellipse"):
+        """Call this function if you are sure that there is no intersection
+        """
+        points1 = self.rasterize()
+        points2 = el2.rasterize()
+        tree = KDTree(points1)
+        a = tree.query(points2, 1)
+        i = np.argmin(a[0])
+
+        pt1 = points1[a[1][i]]
+        pt2 = points2[i]
+        a = (pt1+pt2)/2
+        return [a]
+
+        return ((pt1[0] + pt2[0])/2, (pt1[1]+pt2[1])/2)
+
     def intersections(self, el2: "Superellipse"):
-        if not(
-                self.bBox[1][1] < el2.bBox[0][1] and el2.bBox[1][1] < self.bBox[0][1]) or not(
-                self.bBox[1][0] > el2.bBox[0][0] and el2.bBox[1][0] > self.bBox[0][0]):
-            # print("No intersection")
-            return ((0, 0), (0, 0))
-        roiUp = self.bBox[0][1] if self.bBox[0][1] < el2.bBox[0][1] else el2.bBox[0][1]
-        roiDown = self.bBox[1][1] if self.bBox[1][1] > el2.bBox[1][1] else el2.bBox[1][1]
-        roiLeft = self.bBox[0][0] if self.bBox[0][0] > el2.bBox[0][0] else el2.bBox[0][0]
-        roiRight = self.bBox[1][0] if self.bBox[1][0] < el2.bBox[1][0] else el2.bBox[1][0]
-        # return ((roiLeft, roiUp), (roiRight, roiDown))
-        lside1 = 0
-        lside2 = 0
-        sside1 = 0
-        sside2 = 0
-        roots = rootsX
-        mode = X
-        # select longer side
-        if roiDown-roiUp > roiLeft-roiRight:
-            # y known, x calculated
-            lside1 = roiDown
-            lside2 = roiUp
-            sside1 = roiLeft
-            sside2 = roiRight
-            roots = rootsX
-            mode = X
-        else:
-            # x known, y calculated
-            lside1 = roiLeft
-            lside2 = roiRight
-            sside1 = roiDown
-            sside2 = roiUp
-            roots = rootsY
-            mode = Y
-
-        results11 = []
-        results12 = []
-        results21 = []
-        results22 = []
-
-        for i in range(lside1, lside2):
-            n1, r11, r12 = roots(self.a, self.b, self.c, self.h, self.k, i)
-            n2, r21, r22 = roots(el2.a, el2.b, el2.c, el2.h, el2.k, i)
-
-            if n1 == 0 or n2 == 0:
-                results11.append(None)
-                results21.append(None)
-                results12.append(None)
-                results22.append(None)
-
-            if sside1 < r11 < sside2:
-                results11.append(r11)
-            else:
-                results11.append(None)
-
-            if sside1 < r21 < sside2:
-                results21.append(r21)
-            else:
-                results21.append(None)
-
-            if n1 == 2 and sside1 < r12 < sside2:
-                results12.append(r12)
-            else:
-                results12.append(None)
-
-            if n2 == 2 and sside1 < r22 < sside2:
-                results22.append(r22)
-            else:
-                results22.append(None)
-
-        diff1 = []
-        diff2 = []
-        diff3 = []
-        diff4 = []
-        i = 0
-        for _ in range(lside1, lside2):
-            r11 = results11[i]
-            r12 = results12[i]
-            r21 = results21[i]
-            r22 = results22[i]
-
-            if r11 is not None:
-                if r21 is not None:
-                    diff1.append(abs(r11-r21))
+        lastDiff = BIG
+        lastY = 0
+        lastX = 0
+        expectIntersection = False
+        recovering = False
+        res = []
+        for x, y in self.borderPointsGenerator():
+            xn, yn = el2.autoroots(x, y)
+            if xn == None:
+                continue
+            diff = abs(y-yn) + abs(x-xn)
+            if expectIntersection:
+                if lastDiff < diff:
+                    res.append((lastX, lastY))
+                    expectIntersection = False
+                    recovering = True
+                    continue
                 else:
-                    diff1.append(BIG)
+                    lastDiff = diff
+                    lastX = x
+                    lastY = y
+                    continue
 
-                if r22 is not None:
-                    diff2.append(abs(r11-r22))
-                else:
-                    diff2.append(BIG)
-            else:
-                diff1.append(BIG)
-                diff2.append(BIG)
+            if diff < 1 and not recovering:
+                expectIntersection = True
+                lastDiff = diff
+                lastX = x
+                lastY = y
 
-            if r12 is not None:
-                if r21 is not None:
-                    diff3.append(abs(r12-r21))
-                else:
-                    diff3.append(BIG)
+            if diff > 1:
+                recovering = False
 
-                if r22 is not None:
-                    diff4.append(abs(r12-r22))
-                else:
-                    diff4.append(BIG)
-            else:
-                diff3.append(BIG)
-                diff4.append(BIG)
-            i += 1
+        return res
 
-        # plt.plot(diff1, label="1")
-        # plt.plot(diff2, label="2")
-        # plt.plot(diff3, label="3")
-        # plt.plot(diff4, label="4")
-        # plt.show()
-        diffs = (diff1, diff2, diff3, diff4)
-        results = (results11, results11, results21, results22)
-        mins = []
-        i = 0
-        for diff in diffs:
-            if len(diff) > 0:
-                mins.append((i, min(diff)))
-            i += 1
-
-        mins.sort(key=lambda x: x[1])
-        res1 = np.argmin(diffs[mins[0][0]])
-        res2 = np.argmin(diffs[mins[1][0]])
-
-        if mode == X:
-            return (round(results[mins[0][0]][res1]), res1+lside1), (round(results[mins[1][0]][res2]), res2+lside1)
-        else:
-            return (res1+lside1, round(results[mins[0][0]][res1])), (res2+lside1, round(results[mins[1][0]][res2]))
+    def findPOI(self, el2: "Superellipse"):
+        inters = self.intersections(el2)
+        if len(inters) == 0:
+            return self.findClosestPoints(el2)
+        return inters
 
 
 H = 500
@@ -185,6 +250,7 @@ def mouseCallback(event, x, y, flags, data):
         py = y
 
     elif event == cv.EVENT_LBUTTONUP:
+        print(x, y)
         px = None
 
     elif event == cv.EVENT_MOUSEMOVE:
@@ -213,19 +279,30 @@ if __name__ == "__main__":
 
     w = cv.namedWindow("img")
     cv.setMouseCallback("img", mouseCallback)
+
+    # for pt1 in el1.borderPointsGenerator():
+    #     img = np.zeros((H, W), np.uint8)
+    #     el1.draw(img)
+    #     pt1 = (round(pt1[0]+W//2), round(-pt1[1]))
+    #     pt1 = clamp(pt1)
+    #     # img = cv.rectangle(img, pt1, pt2, 100, 1)
+    #     img = cv.circle(img, pt1, 5, 255)
+    #     cv.imshow("img", img)
+    #     key = cv.waitKey(10)
+    #     if key == 27:  # esc
+    #         break
+
     while True:
         img = np.zeros((H, W), np.uint8)
         el1.draw(img)
         el2.draw(img)
-        pt1, pt2 = el1.intersections(el2)
-
-        pt1 = (pt1[0]+W//2, -pt1[1])
-        pt2 = (pt2[0]+W//2, -pt2[1])
-        pt1 = clamp(pt1)
-        pt2 = clamp(pt2)
+        pts = el1.findPOI(el2)
         # img = cv.rectangle(img, pt1, pt2, 100, 1)
-        img = cv.circle(img, pt1, 5, 255)
-        img = cv.circle(img, pt2, 5, 255)
+
+        for pt in pts:
+            pt = (round(pt[0]+W//2), round(-pt[1]))
+            pt = clamp(pt)
+            img = cv.circle(img, pt, 5, 255)
         cv.imshow("img", img)
         key = cv.waitKey(10)
         if key == 27:  # esc

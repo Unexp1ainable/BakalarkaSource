@@ -15,6 +15,7 @@ def draw_ellipse(img: np.ndarray, a: float, b: float, c: float, h: float, k: flo
     points = raster_ellipse(a, b, c, h, k)
     for x, y in points:
         x += hx
+        y = -y
         if 0 <= x < wi and 0 <= y < hi:
             img[y][x] = 255
 
@@ -60,25 +61,25 @@ def raster_ellipse(a: float, b: float, c: float, h: float, k: float):
         if n < 1:
             continue
         x = round(x1)
-        result.append((x, -y))
+        result.append((x, y))
 
         if n == 1:
             continue
         x = round(x2)
-        result.append((x, -y))
+        result.append((x, y))
 
     for x in range(xstart, xend):
         n, y1, y2 = rootsY(a, b, c, h, k, x)
 
         if n < 1:
             continue
-        y = -round(y1)
+        y = round(y1)
         if (x, y) not in result:
             result.append((x, y))
 
         if n == 1:
             continue
-        y = -round(y2)
+        y = round(y2)
         if (x, y) not in result:
             result.append((x, y))
 
