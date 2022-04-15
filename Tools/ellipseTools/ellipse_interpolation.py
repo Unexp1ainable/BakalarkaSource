@@ -38,7 +38,7 @@ def show(a, b, c, k):
 
 
 # @jit(nopython=True)
-def fit_a(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
+def fit_a(a: float, b: float, c: float, h: float, k: float, points: List[Tuple[int, int]],
           height, width, val) -> Tuple[float, float, float, float]:
 
     pts = [
@@ -65,7 +65,7 @@ def fit_a(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
 
 
 # @jit(nopython=True)
-def fit_b(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
+def fit_b(a: float, b: float, c: float, h: float, k: float, points: List[Tuple[int, int]],
           height, width, val) -> float:
 
     pts = [
@@ -108,54 +108,84 @@ def fit_b(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
 
 
 # @jit(nopython=True)
-def fit_c(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
+def fit_c(a: float, b: float, c: float, h: float, k: float, points: List[Tuple[int, int]],
           height, width, val) -> Tuple[float, float, float, float]:
-    return -0.3
+    # lastRank = rank_ellipse(a, b, c, k, points, height, width)
+    # # determine direction
+    # currRank = rank_ellipse(a, b, c + STEP_C, k, points, height, width)
+    # if lastRank < currRank:
+    #     DIR_C = DOWN
+    # else:
+    #     DIR_C = UP
+    #     c += STEP_C
+
+    # while True:
+    #     if DIR_C == UP:
+    #         currRank = rank_ellipse(a, b, c + STEP_C, k, points, height, width)
+    #         if lastRank < currRank:
+    #             break
+    #         else:
+    #             c += STEP_C
+    #             if c > 7:
+    #                 break
+    #     else:
+    #         currRank = rank_ellipse(a, b, c - STEP_C, k, points, height, width)
+    #         if lastRank < currRank:
+    #             break
+    #         else:
+    #             if c - STEP_C <= 1.5:
+    #                 break
+    #             c -= STEP_C
+
+    # if True:
+    #     show(a, b, c, k)
+
+    return 2.13
 
 
 # @jit(nopython=True)
-def fit_k(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
+def fit_k(a: float, b: float, c: float, h: float, k: float, points: List[Tuple[int, int]],
           height, width, val) -> Tuple[float, float, float, float]:
     pts = [
-        (0.0, -0.0),
-        (7.5, -0.0),
-        (15.0, -0.0),
-        (22.5, -0.0),
-        (30.0, -0.0),
-        (37.75, -0.0),
-        (45.25, -0.0),
-        (52.75, -1.7382812499999998),
-        (60.25, -10.429687499999998),
-        (67.75, -43.45703124999999),
-        (75.25, -81.69921874999999),
-        (82.75, -118.20312499999999),
-        (90.25, -147.75390625),
-        (98.0, -187.73437499999997),
-        (105.5, -220.76171874999997),
-        (113.0, -265.95703125),
-        (120.5, -297.24609375),
-        (128.0, -325.05859374999994),
-        (135.5, -358.08593749999994),
-        (143.0, -389.37499999999994),
-        (150.5, -429.35546874999994),
-        (158.0, -460.64453124999994),
-        (165.75, -497.14843749999994),
-        (173.25, -533.65234375),
-        (180.75, -584.0625),
-        (188.25, -629.2578125),
-        (195.75, -683.1445312499999),
-        (203.25, -735.2929687499999),
-        (210.75, -804.8242187499999),
-        (218.25, -889.9999999999999),
-        (226.0, -0.0),
-        (233.5, -0.0),
-        (241.0, -0.0),
-        (248.5, -0.0)]
+        (0.0, 0.0),
+        (7.5, 0.0),
+        (15.0, 0.0),
+        (22.5, 0.0),
+        (30.0, 0.0),
+        (37.75, 0.0),
+        (45.25, 0.0),
+        (52.75, 1.7382812499999998),
+        (60.25, 10.429687499999998),
+        (67.75, 43.45703124999999),
+        (75.25, 81.69921874999999),
+        (82.75, 118.20312499999999),
+        (90.25, 147.75390625),
+        (98.0, 187.73437499999997),
+        (105.5, 220.76171874999997),
+        (113.0, 265.95703125),
+        (120.5, 297.24609375),
+        (128.0, 325.05859374999994),
+        (135.5, 358.08593749999994),
+        (143.0, 389.37499999999994),
+        (150.5, 429.35546874999994),
+        (158.0, 460.64453124999994),
+        (165.75, 497.14843749999994),
+        (173.25, 533.65234375),
+        (180.75, 584.0625),
+        (188.25, 629.2578125),
+        (195.75, 683.1445312499999),
+        (203.25, 735.2929687499999),
+        (210.75, 804.8242187499999),
+        (218.25, 889.9999999999999),
+        (226.0, 0.0),
+        (233.5, 0.0),
+        (241.0, 0.0),
+        (248.5, 0.0)]
     cs = PchipInterpolator(list(np.arange(0, 256, 256/34)), pts)
     return cs(val)[1]
 
 
-def fit_ellipse(img: np.ndarray, value: int = None, name: str = "") -> Tuple[float, float, float, float]:
+def fit_ellipse(img: np.ndarray, value: int = None, name: str = "") -> Tuple[float, float, float, float, float]:
     if type(img) == tuple:  # multiprocessing arguments
         value = img[1]
         name = img[2]
@@ -168,7 +198,7 @@ def fit_ellipse(img: np.ndarray, value: int = None, name: str = "") -> Tuple[flo
     bounds = get_bounds(img)
     if bounds[0] >= bounds[2] or bounds[1] >= bounds[3]:
         print("Error, no pixels of interest. " + str(value))
-        return (0., 0., 0., 0.)
+        return (0., 0., 0., 0., 0.)
 
     points = np.argwhere(img)
     height = img.shape[0]
@@ -176,16 +206,16 @@ def fit_ellipse(img: np.ndarray, value: int = None, name: str = "") -> Tuple[flo
 
     a = round((bounds[2]-bounds[0])*0.5)
     b = a/2
-    c = 0
+    c = 2
     k = -bounds[1]
 
-    a = fit_a(a, b, c, k, points, height, width, value)
-    b = fit_b(a, b, c, k, points, height, width, value)
-    c = fit_c(a, b, c, k, points, height, width, value)
-    k = fit_k(a, b, c, k, points, height, width, value)
+    a = fit_a(a, b, c, 0, k, points, height, width, value)
+    b = fit_b(a, b, c, 0, k, points, height, width, value)
+    k = fit_k(a, b, c, 0, k, points, height, width, value)
+    c = fit_c(a, b, c, 0, k, points, height, width, value)
 
     print("convergence reached " + str(value))
-    draw_ellipse(img, a, b, c, k)
+    draw_ellipse(img, a, b, c, 0, k)
 
     outdir = "output/"
     if name:
@@ -198,12 +228,12 @@ def fit_ellipse(img: np.ndarray, value: int = None, name: str = "") -> Tuple[flo
             file.write(str(value) + ";" + str(a) + ";" + str(b) + ";" + str(c) + ";" + str(k) + "\n")
     except:
         print("Fitted for " + str(value) + ": a=" + str(a) + ", b=" + str(b) + ", c=" + str(c) + ", k=" + str(k) + "\n")
-    return (a, b, c, k)
+    return (a, b, c, 0, k)
 
 
 if __name__ == "__main__":
     PATH = "C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/Q1-upravene/all/5kV_105_1_u.png"
-    VALUE = 120
+    VALUE = 80
     VISUALIZE = True
     ANGLE = -11
 

@@ -10,7 +10,7 @@ H = 512
 W = 1024
 RESOLUTION = (H, W, 3)
 PATH = "output/5kV_105_1_u/output.csv"
-MODE = "b"
+MODE = "c"
 
 POINTS_N = 34
 POINT_GAP = 256/POINTS_N

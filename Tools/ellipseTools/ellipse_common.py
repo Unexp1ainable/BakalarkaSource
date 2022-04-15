@@ -7,81 +7,85 @@ import numpy as np
 import cv2 as cv
 
 
-def draw_ellipse(img: np.ndarray, a: float, b: float, c: float, k: float) -> None:
-    w = img.shape[1]
-    h = img.shape[0]
-    points = raster_ellipse(a, b, c, k, h, w)
-    if len(points) == 0:
-        return
+def draw_ellipse(img: np.ndarray, a: float, b: float, c: float, h: float, k: float) -> None:
+    wi = img.shape[1]
+    hi = img.shape[0]
+    hx = hi//2
+
+    points = raster_ellipse(a, b, c, h, k)
     for x, y in points:
-        if 0 <= x < w and 0 <= y < h:
+        x += hx
+        if 0 <= x < wi and 0 <= y < hi:
             img[y][x] = 255
 
 
-@jit(nopython=True)
-def roots(a, b, c):
-    if a == 0:
+# @jit(nopython=True)
+def rootsY(a, b, c, h, k, x):
+    mid = 1-abs((x+h)/a)**(c)
+    if mid < 0:
         return (0, 0., 0.)
-    D = b**2-4*a*c
-    if D < 0:
-        return (0, 0., 0.)
-    if D == 0:
-        return (1, -b/(2*a), 0.)
+    if mid == 0:
+        return (1, -b-k, 0.)
     else:
-        sD = sqrt(D)
-        return (2, (-b+sD)/(2*a), (-b-sD)/(2*a))
+        sD = b*(mid**(1/c))
+        return (2, (sD-b-k), (-sD-b-k))
 
 
-@jit(nopython=True)
-def raster_ellipse(a: float, b: float, c: float, k: float, height: int, width: int):
+# @jit(nopython=True)
+def rootsX(a, b, c, h, k, y):
+    mid = 1-abs((y+k+b)/b)**(c)
+    if mid < 0:
+        return (0, 0., 0.)
+    if mid == 0:
+        return (1, -h, 0.)
+    else:
+        sD = a*(mid**(1/c))
+        return (2, (sD-h), (-sD-h))
+
+
+# @jit(nopython=True)
+def raster_ellipse(a: float, b: float, c: float, h: float, k: float):
     if a == 0 or b == 0:
         return np.empty((0, 0), np.int64)
     result = []
-    A = c
-    B = a**2
-    C = -2*k*b*c+k**2*c+b**2*c+b**2
-    D = -2*c*k+2*b*c
-    E = -2*k*a**2+2*b*a**2
-    F = -2*k*b*a**2+k**2*a**2
 
-    hx = width//2
-
-    ystart = round(k)
+    ystart = -round(k)
     yend = round(b*2) - ystart
-    xstart = round(-a)
-    xend = round(a)
+    xstart = round(-a-h)
+    xend = round(a-h)
 
     for y in range(ystart, -yend, -1):
-        n, x1, x2 = roots(A*y**2+C+D*y, 0, E*y+B*y**2+F)
+        n, x1, x2 = rootsX(a, b, c, h, k, y)
 
         if n < 1:
             continue
-        x = round(x1)+hx
+        x = round(x1)
         result.append((x, -y))
 
         if n == 1:
             continue
-        x = round(x2)+hx
+        x = round(x2)
         result.append((x, -y))
 
     for x in range(xstart, xend):
-        n, y1, y2 = roots(B+A*x**2, D*x**2+E, C*x**2+F)
+        n, y1, y2 = rootsY(a, b, c, h, k, x)
 
         if n < 1:
             continue
         y = -round(y1)
-        if (x+hx, y) not in result:
-            result.append((x+hx, y))
+        if (x, y) not in result:
+            result.append((x, y))
 
         if n == 1:
             continue
         y = -round(y2)
-        if (x+hx, y) not in result:
-            result.append((x+hx, y))
+        if (x, y) not in result:
+            result.append((x, y))
+
     return np.array(result, np.int64)
 
 
-@jit(nopython=True)
+# @jit(nopython=True)
 def rank_point(ellipsePoints: np.ndarray, x: int, y: int):
     lowestDist = 99999999
     for xp, yp in ellipsePoints:
@@ -91,16 +95,18 @@ def rank_point(ellipsePoints: np.ndarray, x: int, y: int):
     return lowestDist
 
 
-@jit(nopython=True)
-def rank_ellipse(a, b, c, k, maskPoints, height, width):
+# @jit(nopython=True)
+def rank_ellipse(a, b, c, h, k, maskPoints, height, width):
     rank = 0
-    ellipsePoints = raster_ellipse(a, b, c, k, height, width)
+    hx = width//2
+    ellipsePoints = raster_ellipse(a, b, c, h, k)
     for y, x in maskPoints:
+        x += hx
         rank += rank_point(ellipsePoints, x, y)
     return rank
 
 
-@jit(nopython=True)
+# @jit(nopython=True)
 def get_bounds(img):
     height = img.shape[0]
     width = img.shape[1]
@@ -151,3 +157,11 @@ def processing(img, value):
     img = cv.filter2D(img, -1, kernel)
     _, img = cv.threshold(img, kernelsize**2+neighbourPixelCount-1, 255, cv.THRESH_BINARY)
     return img
+
+
+if __name__ == "__main__":
+    imze = np.zeros((300, 300), np.uint8)
+    draw_ellipse(imze, 80, 100, 2, -50, 20)
+    cv.imshow("a", imze)
+    cv.waitKey(0)
+    cv.destroyAllWindows()

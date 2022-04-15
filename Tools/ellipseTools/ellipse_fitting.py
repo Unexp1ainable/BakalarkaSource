@@ -25,7 +25,7 @@ DIR_K = None
 
 ROUGH_ITERATIONS = 10
 SMOOTH_ITERATIONS = 10
-VISUALIZE = False
+VISUALIZE = True
 
 
 def show(a, b, c, k):
@@ -38,9 +38,9 @@ def show(a, b, c, k):
 @jit(nopython=True)
 def fit_a(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
           height, width, val) -> Tuple[float, float, float, float]:
-    lastRank = rank_ellipse(a, b, c, k, points, height, width)
+    lastRank = rank_ellipse(a, b, c, 0, k, points, height, width)
     # determine direction
-    currRank = rank_ellipse(a - STEP_A, b, c, k, points, height, width)  # - to promote lower a
+    currRank = rank_ellipse(a - STEP_A, b, c, 0, k, points, height, width)  # - to promote lower a
     if lastRank < currRank:
         DIR_A = UP
     else:
@@ -50,7 +50,7 @@ def fit_a(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
     while True:
         lastRank = currRank
         if DIR_A == UP:
-            currRank = rank_ellipse(a + STEP_A, b, c, k, points, height, width)
+            currRank = rank_ellipse(a + STEP_A, b, c, 0, k, points, height, width)
             if lastRank < currRank:
                 break
             else:
@@ -58,7 +58,7 @@ def fit_a(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
                 if a > width:
                     break
         else:
-            currRank = rank_ellipse(a - STEP_A, b, c, k, points, height, width)
+            currRank = rank_ellipse(a - STEP_A, b, c, 0, k, points, height, width)
             if lastRank < currRank:
                 break
             else:
@@ -66,17 +66,17 @@ def fit_a(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
                 if a < STEP_A:
                     break
 
-    # if VISUALIZE:
-    #     show(a, b, c, k)
+        # if VISUALIZE:
+        #     show(a, b, c, k)
     return a
 
 
 @jit(nopython=True)
 def fit_b(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
           height, width, val) -> Tuple[float, float, float, float]:
-    lastRank = rank_ellipse(a, b, c, k, points, height, width)
+    lastRank = rank_ellipse(a, b, c, 0, k, points, height, width)
     # determine direction
-    currRank = rank_ellipse(a, b + STEP_B, c, k, points, height, width)
+    currRank = rank_ellipse(a, b + STEP_B, c, 0, k, points, height, width)
     if lastRank < currRank:
         DIR_B = DOWN
     else:
@@ -86,7 +86,7 @@ def fit_b(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
     while True:
         lastRank = currRank
         if DIR_B == UP:
-            currRank = rank_ellipse(a, b + STEP_B, c, k, points, height, width)
+            currRank = rank_ellipse(a, b + STEP_B, c, 0, k, points, height, width)
             if lastRank < currRank:
                 break
             else:
@@ -94,7 +94,7 @@ def fit_b(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
                 if b > height:
                     break
         else:
-            currRank = rank_ellipse(a, b - STEP_B, c, k, points, height, width)
+            currRank = rank_ellipse(a, b - STEP_B, c, 0, k, points, height, width)
             if lastRank < currRank:
                 break
             else:
@@ -110,9 +110,9 @@ def fit_b(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
 @jit(nopython=True)
 def fit_c(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
           height, width, val) -> Tuple[float, float, float, float]:
-    lastRank = rank_ellipse(a, b, c, k, points, height, width)
+    lastRank = rank_ellipse(a, b, c, 0, k, points, height, width)
     # determine direction
-    currRank = rank_ellipse(a, b, c + STEP_C, k, points, height, width)
+    currRank = rank_ellipse(a, b, c + STEP_C, 0, k, points, height, width)
     if lastRank < currRank:
         DIR_C = DOWN
     else:
@@ -122,19 +122,19 @@ def fit_c(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
     while True:
         lastRank = currRank
         if DIR_C == UP:
-            currRank = rank_ellipse(a, b, c + STEP_C, k, points, height, width)
+            currRank = rank_ellipse(a, b, c + STEP_C, 0, k, points, height, width)
             if lastRank < currRank:
                 break
             else:
                 c += STEP_C
-                if c > 1.5:
+                if c > 7:
                     break
         else:
-            currRank = rank_ellipse(a, b, c - STEP_C, k, points, height, width)
+            currRank = rank_ellipse(a, b, c - STEP_C, 0, k, points, height, width)
             if lastRank < currRank:
                 break
             else:
-                if c - STEP_C <= -0.95:
+                if c - STEP_C <= 1.5:
                     break
                 c -= STEP_C
 
@@ -147,9 +147,9 @@ def fit_c(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
 @jit(nopython=True)
 def fit_k(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
           height, width, val) -> Tuple[float, float, float, float]:
-    lastRank = rank_ellipse(a, b, c, k, points, height, width)
+    lastRank = rank_ellipse(a, b, c, 0, k, points, height, width)
     # determine direction
-    currRank = rank_ellipse(a, b, c, k + STEP_K, points, height, width)
+    currRank = rank_ellipse(a, b, c, 0, k + STEP_K, points, height, width)
     if lastRank < currRank:
         DIR_K = DOWN
     else:
@@ -159,7 +159,7 @@ def fit_k(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
     while True:
         lastRank = currRank
         if DIR_K == UP:
-            currRank = rank_ellipse(a, b, c, k + STEP_K, points, height, width)
+            currRank = rank_ellipse(a, b, c, 0, k + STEP_K, points, height, width)
             if lastRank < currRank:
                 break
             else:
@@ -167,7 +167,7 @@ def fit_k(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
                 if k > height:
                     break
         else:
-            currRank = rank_ellipse(a, b, c, k - STEP_K, points, height, width)
+            currRank = rank_ellipse(a, b, c, 0, k - STEP_K, points, height, width)
             if lastRank < currRank:
                 break
             else:
@@ -181,7 +181,7 @@ def fit_k(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
     return k
 
 
-def fit_ellipse(img: np.ndarray, value: int = None, name: str = "") -> Tuple[float, float, float, float]:
+def fit_ellipse(img: np.ndarray, value: int = None, name: str = "") -> Tuple[float, float, float, float, float]:
     global STEP_A, STEP_B, STEP_C
     if type(img) == tuple:  # multiprocessing arguments
         value = img[1]
@@ -195,7 +195,7 @@ def fit_ellipse(img: np.ndarray, value: int = None, name: str = "") -> Tuple[flo
     bounds = get_bounds(img)
     if bounds[0] >= bounds[2] or bounds[1] >= bounds[3]:
         print("Error, no pixels of interest. " + str(value))
-        return (0., 0., 0., 0.)
+        return (0., 0., 0., 0., 0.)
 
     points = np.argwhere(img)
     height = img.shape[0]
@@ -203,8 +203,8 @@ def fit_ellipse(img: np.ndarray, value: int = None, name: str = "") -> Tuple[flo
 
     a = round((bounds[2]-bounds[0])*0.5)
     b = a/2
-    c = 0
-    k = -bounds[1]
+    c = 2
+    k = bounds[1]
 
     convergence = False
     i = 0
@@ -220,7 +220,7 @@ def fit_ellipse(img: np.ndarray, value: int = None, name: str = "") -> Tuple[flo
         k = fit_k(a, b, c, k, points, height, width, value)
 
         if a == 0:
-            return
+            return (0., 0., 0., 0., 0.)
         # print(a, b, c, k)
 
         convergence = isclose(olda, a) and isclose(oldb, b, abs_tol=0.001) and isclose(oldc, c) and isclose(oldk, k)
@@ -244,7 +244,7 @@ def fit_ellipse(img: np.ndarray, value: int = None, name: str = "") -> Tuple[flo
         k = fit_k(a, b, c, k, points, height, width, value)
 
         if a == 0:
-            return
+            return (0., 0., 0., 0., 0.)
         # print(a, b, c, k)
 
         convergence = isclose(olda, a) and isclose(oldb, b, abs_tol=0.001) and isclose(oldc, c) and isclose(oldk, k)
@@ -253,7 +253,7 @@ def fit_ellipse(img: np.ndarray, value: int = None, name: str = "") -> Tuple[flo
         i += 1
 
     print("convergence reached " + str(value))
-    draw_ellipse(img, a, b, c, k)
+    draw_ellipse(img, a, b, c, 0, k)
 
     outdir = "output/"
     if name:
@@ -266,12 +266,12 @@ def fit_ellipse(img: np.ndarray, value: int = None, name: str = "") -> Tuple[flo
             file.write(str(value) + ";" + str(a) + ";" + str(b) + ";" + str(c) + ";" + str(k) + "\n")
     except:
         print("Fitted for " + str(value) + ": a=" + str(a) + ", b=" + str(b) + ", c=" + str(c) + ", k=" + str(k) + "\n")
-    return (a, b, c, k)
+    return (a, b, c, 0, k)
 
 
 if __name__ == "__main__":
     PATH = "C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/Q1-upravene/all/5kV_105_1_u.png"
-    VALUE = 120
+    VALUE = 75
     VISUALIZE = True
     ANGLE = -11
 
