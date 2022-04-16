@@ -30,7 +30,7 @@ VISUALIZE = True
 
 def show(a, b, c, k):
     dimg = img.copy()
-    draw_ellipse(dimg, a, b, c, k)
+    draw_ellipse(dimg, a, b, c, 0, k)
     cv.imshow("tmp", dimg)
     cv.waitKey(1)
 
@@ -270,10 +270,10 @@ def fit_ellipse(img: np.ndarray, value: int = None, name: str = "") -> Tuple[flo
 
 
 if __name__ == "__main__":
-    PATH = "C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/Q1-upravene/all/5kV_105_1_u.png"
-    VALUE = 75
+    PATH = "C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/Q4-upravene-spravne/all/5kV_10mm_3_u.png"
+    VALUE = 195
     VISUALIZE = True
-    ANGLE = -11
+    ANGLE = 151
 
     global img
     img = cv.imread(PATH, cv.IMREAD_GRAYSCALE)
@@ -283,7 +283,7 @@ if __name__ == "__main__":
 
     # shap = img.shape
     # img.resize((shap[0]+150, shap[1]), refcheck=False)
-    res = fit_ellipse(imgcopy, VALUE, "ba.png")
+    res = fit_ellipse(imgcopy, VALUE, PATH)
 
     # prepare final image
 

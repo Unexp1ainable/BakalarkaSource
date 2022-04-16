@@ -9,7 +9,7 @@ WNAME = "Builder"
 H = 512
 W = 1024
 RESOLUTION = (H, W, 3)
-PATH = "output/5kV_105_1_u/output.csv"
+PATH = "output/5kV_10mm_3_u/output.csv"
 MODE = "c"
 
 POINTS_N = 34
@@ -68,16 +68,12 @@ def make_template():
     global data
     data = np.zeros((256, 1), np.float64)
 
-    kcoef = 1   # I am lazy
-    if MODE == "k":
-        kcoef = -1
-
     with open(PATH) as file:
         for line in file:
             try:
                 tokens = line.strip().split(";")
                 x = int(tokens[0])
-                y = kcoef*float(tokens[col])
+                y = float(tokens[col])
                 data[x] = y
             except:
                 pass

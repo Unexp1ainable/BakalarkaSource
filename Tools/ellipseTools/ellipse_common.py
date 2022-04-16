@@ -20,7 +20,7 @@ def draw_ellipse(img: np.ndarray, a: float, b: float, c: float, h: float, k: flo
             img[y][x] = 255
 
 
-# @jit(nopython=True)
+@jit(nopython=True)
 def rootsY(a, b, c, h, k, x):
     mid = 1-abs((x+h)/a)**(c)
     if mid < 0:
@@ -32,7 +32,7 @@ def rootsY(a, b, c, h, k, x):
         return (2, (sD-b-k), (-sD-b-k))
 
 
-# @jit(nopython=True)
+@jit(nopython=True)
 def rootsX(a, b, c, h, k, y):
     mid = 1-abs((y+k+b)/b)**(c)
     if mid < 0:
@@ -44,7 +44,7 @@ def rootsX(a, b, c, h, k, y):
         return (2, (sD-h), (-sD-h))
 
 
-# @jit(nopython=True)
+@jit(nopython=True)
 def raster_ellipse(a: float, b: float, c: float, h: float, k: float):
     if a == 0 or b == 0:
         return np.empty((0, 0), np.int64)
@@ -86,28 +86,29 @@ def raster_ellipse(a: float, b: float, c: float, h: float, k: float):
     return np.array(result, np.int64)
 
 
-# @jit(nopython=True)
+@jit(nopython=True)
 def rank_point(ellipsePoints: np.ndarray, x: int, y: int):
     lowestDist = 99999999
     for xp, yp in ellipsePoints:
+        yp = -yp
         d = (x-xp)**2+(y-yp)**2
         if d < lowestDist:
             lowestDist = d
     return lowestDist
 
 
-# @jit(nopython=True)
+@jit(nopython=True)
 def rank_ellipse(a, b, c, h, k, maskPoints, height, width):
     rank = 0
     hx = width//2
     ellipsePoints = raster_ellipse(a, b, c, h, k)
     for y, x in maskPoints:
-        x += hx
+        x -= hx
         rank += rank_point(ellipsePoints, x, y)
     return rank
 
 
-# @jit(nopython=True)
+@jit(nopython=True)
 def get_bounds(img):
     height = img.shape[0]
     width = img.shape[1]

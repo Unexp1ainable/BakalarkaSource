@@ -10,7 +10,7 @@ FIT = False
 MODE = INTERPOLATE
 # MODE = FIT
 
-if MODE:
+if MODE == INTERPOLATE:
     from ellipse_interpolation import fit_ellipse, preprocessing
 else:
     from ellipse_fitting import fit_ellipse, preprocessing
@@ -22,9 +22,9 @@ def args(img, name):
 
 
 if __name__ == "__main__":
-    dir = "C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/Q1-upravene/all/"
+    dir = "C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/Q4-upravene-spravne/all/"
 
-    with open("C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/Q1-upravene/all/list2.txt") as f:
+    with open(dir + "list2.txt") as f:
         for line in f:
             name = line.strip()
             outdir = "output/" + name[:-4] + "/"
@@ -37,7 +37,7 @@ if __name__ == "__main__":
             if img is None:
                 print("Image does not exist.")
             else:
-                img = preprocessing(img, size=(1024, 1024))
+                img = preprocessing(img, size=(1024, 1024), angle=151)
 
                 with open(outdir + "output.csv", "w") as f:
                     f.write("--- algorithm has started ---\n")
