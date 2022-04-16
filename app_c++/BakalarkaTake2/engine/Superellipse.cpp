@@ -337,7 +337,7 @@ vector<QPointF> Superellipse::intersections(const Superellipse& el2) const
 			}
 		}
 
-`		if (diff < 1 && !recovering) {
+		if (diff < 1 && !recovering) {
 			expectIntersection = true;
 			lastDiff = diff;
 			lastX = x;
