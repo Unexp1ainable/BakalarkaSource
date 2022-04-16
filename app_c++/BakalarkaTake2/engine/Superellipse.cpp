@@ -300,13 +300,12 @@ vector<QPointF> Superellipse::borderPoints() const
 	return result;
 }
 
-QPointF Superellipse::closestMidpoint(const Superellipse& el2) const
+vector<QPointF> Superellipse::findPOIs(const Superellipse& el2) const
 {
-	return QPointF();
-}
+	static constexpr int const NONE = 9999999;
+	double globalMin = NONE;
+	QPointF gmpt;
 
-vector<QPointF> Superellipse::intersections(const Superellipse& el2) const
-{
 	double lastDiff = 0.;
 	double lastX = 0.;
 	double lastY = 0.;
@@ -346,18 +345,29 @@ vector<QPointF> Superellipse::intersections(const Superellipse& el2) const
 		if (diff > 1) {
 			recovering = false;
 		}
+
+		// look for closest points
+		if (diff < globalMin) {
+			gmpt = QPointF((pt.x() + x) / 2, (pt.y() + y)/2);
+			globalMin = diff;
+		}
+	}
+
+	if (results.size() == 0) {
+		if (globalMin != NONE) {
+			results.push_back(gmpt);
+		}
+		// if no intersections and no closest points were found, use average of midpoints
+		else {
+			double ca1 = m_a / (m_a + el2.m_a);
+			double ca2 = el2.m_a / (m_a + el2.m_a);
+			double cb1 = m_b / (m_b + el2.m_b);
+			double cb2 = el2.m_b / (m_b + el2.m_b);
+			results.push_back(QPointF(-(m_h * ca2 + el2.m_h * ca1), -((m_k + m_b)*cb2 + (el2.m_k + el2.m_b) * cb1)));
+		}
 	}
 
 	return results;
-}
-
-vector<QPointF> Superellipse::findPOIs(const Superellipse& el2) const
-{
-	auto inters = intersections(el2);
-	if (inters.size() == 0) {
-		return vector<QPointF>{ {closestMidpoint(el2)} };
-	}
-	return inters;
 }
 
 void Superellipse::calculateBoundingBox()
