@@ -24,12 +24,12 @@ MainWindow::MainWindow(QWidget* parent)
 	// TODO remove
 	try
 	{
-		loadReflectanceMaps("C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/source/sim2.png");
+		loadReflectanceMaps("C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/Q1-upravene/all/5kV_105_1_u.png");
 		array<QString, 4> filenames = {
-				"../../../data/cinove_koule/25_mikro/cropped/25_mikro_6.tif",
-				"../../../data/cinove_koule/25_mikro/cropped/25_mikro_5.tif",
-				"../../../data/cinove_koule/25_mikro/cropped/25_mikro_3.tif",
-				"../../../data/cinove_koule/25_mikro/cropped/25_mikro_4.tif",
+				"C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/old/Q1/5kV/5kV_105_1.png",
+				"C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/old/Q2/5kV/5kV_105_2.png",
+				"C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/old/Q3/5kV/5kV_105_3.png",
+				"C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/old/Q4/5kV/5kV_105_4.png",
 		};
 		loadBSEImages(filenames);
 	}
@@ -78,6 +78,7 @@ void MainWindow::loadBSEImages(std::array<QString, 4> paths)
 		auto list = QFileDialog::getOpenFileNames();
 		if (list.size() != 4) {
 			QMessageBox::critical(this, "Unable to open", "Please select 4 images.");
+			return;
 		}
 		for (int i = 0; i < 4; i++) {
 			paths[i] = list[i];

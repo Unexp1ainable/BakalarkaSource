@@ -19,11 +19,6 @@
           "name": "CMAKE_PREFIX_PATH",
           "value": "C:/Qt/6.2.3/msvc2019_64/lib/cmake",
           "type": "STRING"
-        },
-        {
-          "name": "CMAKE_INSTALL_PREFIX",
-          "value": "C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/source/app_c++/BakalarkaTake2/install/x64-Debug",
-          "type": "PATH"
         }
       ]
     },

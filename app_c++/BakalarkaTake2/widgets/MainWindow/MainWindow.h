@@ -7,6 +7,7 @@
 
 #include <opencv2/opencv.hpp>
 #include "ui_MainWindow.h"
+#include "../../engine/Superellipse.h"
 
 class MainWindow : public QMainWindow, public Ui::MainWindow
 {
