@@ -1,6 +1,8 @@
 #include "MainWindow.h"
 #include <QFileDialog>
 #include <QMessageBox>
+#include <iostream>
+#include <fstream>
 
 
 using namespace std;
@@ -24,12 +26,12 @@ MainWindow::MainWindow(QWidget* parent)
 	// TODO remove
 	try
 	{
-		loadReflectanceMaps("C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/Q1-upravene/all/5kV_105_1_u.png");
+		loadReflectanceMaps("C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/Q4-upravene-spravne/5kV-upravene-spravne/5kV_10mm_3_u.png");
 		array<QString, 4> filenames = {
-				"C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/old/Q1/5kV/5kV_105_1.png",
-				"C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/old/Q2/5kV/5kV_105_2.png",
-				"C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/old/Q3/5kV/5kV_105_3.png",
-				"C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/old/Q4/5kV/5kV_105_4.png",
+				"C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/2022-04-11 data pro Sama konst GO/5 kV/5kV_10mm_1.png",
+				"C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/2022-04-11 data pro Sama konst GO/5 kV/5kV_10mm_2.png",
+				"C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/2022-04-11 data pro Sama konst GO/5 kV/5kV_10mm_3.png",
+				"C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/2022-04-11 data pro Sama konst GO/5 kV/5kV_10mm_4.png",
 		};
 		loadBSEImages(filenames);
 	}
@@ -86,11 +88,29 @@ void MainWindow::loadBSEImages(std::array<QString, 4> paths)
 	}
 
 	for (int i = 0; i < 4; i++) {
-		m_imgs[i] = imread(paths[i].toStdString());
-		if (m_imgs[i].empty()) {
+		auto img = imread(paths[i].toStdString());
+		if (img.empty()) {
 			QMessageBox::critical(this, "Unable to open", "Image \"" + paths[i] + "\" could not be loaded.");
 			return;
 		}
+
+		// look for .hdr file
+		auto file = ifstream((paths[i].replace(QChar('.'), "-") + ".hdr").toStdString());
+		std::string content;
+		if (file.is_open()) {
+			while (getline(file, content)) {
+				if (content.starts_with("ImageStripSize=")) {
+					try {
+						int stripSize = stoi(content.substr(15));
+						img = img(cv::Range(0, img.rows - stripSize), cv::Range(0, img.cols));
+					}
+					catch (std::exception& e) {
+						std::cout << e.what() << "\n";
+					}
+				}
+			}
+		}
+		m_imgs[i] = img;
 		cvtColor(m_imgs[i], m_grayImgs[i], COLOR_BGR2GRAY);
 	}
 

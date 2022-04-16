@@ -37,7 +37,7 @@ void mouseCallback(int event, int x, int y, int flags, void* userdata) {
 }
 
 int main(int argc, char* argv[])
-{
+{/*
 	Superellipse el1 = Superellipse(100, 50, 2.5, 10, 150);
 	el2 = Superellipse(150, 150, 2.5, 0, 0);
 	cv::namedWindow("img");
@@ -92,13 +92,12 @@ int main(int argc, char* argv[])
 		cv.imshow("img", img)
 		key = cv.waitKey(10)
 		if key == 27:  # esc
-			break*/
-	}
+			break
 
 
 	cv::destroyAllWindows();
-
-	/*QApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::Round);
+	*/
+	QApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::Round);
 	auto app = QApplication(argc, argv);
 	auto window = MainWindow();
 
@@ -111,5 +110,5 @@ int main(int argc, char* argv[])
 
 	window.resize(800, 800);
 	window.show();
-	return app.exec();*/
+	return app.exec();
 }
