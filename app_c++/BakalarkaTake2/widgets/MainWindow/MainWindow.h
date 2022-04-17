@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QDomDocument>
 #include <QMainWindow>
 #include <QString>
 
@@ -8,6 +9,9 @@
 #include <opencv2/opencv.hpp>
 #include "ui_MainWindow.h"
 #include "../../engine/Superellipse.h"
+#include "../../engine/Configuration.h"
+#include "../DetectorSettingsDialog/DetectorSettingsDialog.h"
+
 
 class MainWindow : public QMainWindow, public Ui::MainWindow
 {
@@ -19,27 +23,31 @@ public:
 
 protected:
 	void loadReflectanceMaps(QString filename = "");
+	void processReflectanceMaps();
 	void loadBSEImages(std::array<QString, 4> paths = {""});
+	void processBSEImages();
 	void showNormalImage();
 	
-	void calculateMasks();
-
-	cv::Point findClosestPair(const cv::Mat& first, const cv::Mat& second);
-
 	std::array<std::array<cv::Mat, 256>, 4> m_masks;
 
 	std::array<cv::Mat, 4> m_maps;
+	std::array<cv::Mat, 4> m_origMaps;
 	std::array<cv::Mat, 4> m_grayMaps;
 						   
 	std::array<cv::Mat, 4> m_imgs;
+	std::array<cv::Mat, 4> m_origImgs;
 	std::array<cv::Mat, 4> m_grayImgs;
 
+	DetectorSettingsDialog* m_angleDialog = nullptr;
 
+	Configuration m_cfg;
 
 protected slots:
 	void onLoadReflectanceMaps(bool checked) { loadReflectanceMaps(); };
 	void onLoadBSEImages(bool checked) { loadBSEImages(); };
 	void onShowNormalImage(bool checked) { showNormalImage(); };
+	void onDetectorSettingsInvoked(bool checked);
+	void onDetectorSettingsChanged();
 	void onSelected(double x, double y);
 	void onSwapped(int first, int second);
 

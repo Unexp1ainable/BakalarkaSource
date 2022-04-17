@@ -15,13 +15,13 @@ set(Boost_DEBUG 1)
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS *.cpp *.h *.ui *.qrc)
 
 find_package(OpenCV REQUIRED)
-find_package(Qt6 COMPONENTS Widgets SvgWidgets REQUIRED)
+find_package(Qt6 COMPONENTS Widgets SvgWidgets Xml REQUIRED)
 find_package(Boost 1.79 REQUIRED)
 
 
 add_executable(${PROJECT_NAME} ${SOURCES})
 
-target_link_libraries(${PROJECT_NAME} PRIVATE Qt6::Widgets Qt6::SvgWidgets ${OpenCV_LIBS} ) 
+target_link_libraries(${PROJECT_NAME} PRIVATE Qt6::Widgets Qt6::SvgWidgets Qt6::Xml ${OpenCV_LIBS} ) 
 
 include_directories(${Qt_DIR}/include)
 include_directories(${OpenCV_DIR}/include)

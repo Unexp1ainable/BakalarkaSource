@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>784</width>
-    <height>641</height>
+    <width>829</width>
+    <height>700</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -45,7 +45,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>784</width>
+     <width>829</width>
      <height>22</height>
     </rect>
    </property>
@@ -62,8 +62,15 @@
     </property>
     <addaction name="actionShow_normal_image"/>
    </widget>
+   <widget class="QMenu" name="menuDetector">
+    <property name="title">
+     <string>Detector</string>
+    </property>
+    <addaction name="actionPort_angle"/>
+   </widget>
    <addaction name="menuLoad"/>
    <addaction name="menuShow"/>
+   <addaction name="menuDetector"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -87,6 +94,11 @@
   <action name="actionShow_normal_image">
    <property name="text">
     <string>Show normal image</string>
+   </property>
+  </action>
+  <action name="actionPort_angle">
+   <property name="text">
+    <string>Port angle</string>
    </property>
   </action>
  </widget>
