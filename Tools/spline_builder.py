@@ -1,16 +1,14 @@
 from sys import stderr
-from cv2 import BORDER_CONSTANT
 import numpy as np
 import cv2 as cv
-from scipy.interpolate import CubicSpline, PchipInterpolator
+from scipy.interpolate import PchipInterpolator
 import re
+from argparse import ArgumentParser
 
 WNAME = "Builder"
 H = 512
 W = 1024
 RESOLUTION = (H, W, 3)
-PATH = "output/5kV_10mm_3_u/output.csv"
-MODE = "c"
 
 POINTS_N = 34
 POINT_GAP = 256/POINTS_N
@@ -28,6 +26,13 @@ global selected
 selected = None
 
 
+def parse_args():
+    parser = ArgumentParser()
+    parser.add_argument("path", help="Path to .csv file with data.")
+    parser.add_argument("mode", choices=["value", "a", "b", "c", "k"], help="Which parameter to interpolate.")
+    return parser.parse_args()
+
+
 def prepare_canvas():
     img = np.full(RESOLUTION, BG_COLOR, np.uint8)
     for i in np.arange(0, 256, POINT_GAP):
@@ -40,7 +45,8 @@ def prepare_canvas():
 
 
 def finalize_canvas(img, m):
-    img = cv.copyMakeBorder(img, BORDER, BORDER, BORDER, BORDER, BORDER_CONSTANT, value=(BG_COLOR, BG_COLOR, BG_COLOR))
+    img = cv.copyMakeBorder(img, BORDER, BORDER, BORDER, BORDER, cv.BORDER_CONSTANT,
+                            value=(BG_COLOR, BG_COLOR, BG_COLOR))
     cv.line(img, (BORDER, H+BORDER), (W+BORDER, H+BORDER), (230, 230, 230), 1)
     cv.line(img, (BORDER, BORDER), (BORDER, H+BORDER), (230, 230, 230), 1)
     for i in np.arange(0, 256, 15):
@@ -57,18 +63,18 @@ def finalize_canvas(img, m):
     return img
 
 
-def make_template():
+def make_template(args):
     global HSCALE, WSCALE, WSCALEI
 
-    if MODE not in MODES:
+    if args.mode not in MODES:
         print("Column does not exist.", file=stderr)
         exit(1)
 
-    col = MODES[MODE]
+    col = MODES[args.mode]
     global data
     data = np.zeros((256, 1), np.float64)
 
-    with open(PATH) as file:
+    with open(args.path) as file:
         for line in file:
             try:
                 tokens = line.strip().split(";")
@@ -155,7 +161,9 @@ def load(s):
 
 if __name__ == "__main__":
     global template, nodes
-    template = make_template()
+
+    args = parse_args()
+    template = make_template(args)
 
     nodes = []
     for i in np.arange(0, 256, POINT_GAP):
@@ -191,4 +199,8 @@ if __name__ == "__main__":
         elif key == 108:  # l
             l = input("Insert loading string: ")
             load(l)
+
+        # close on manual window close
+        if cv.getWindowProperty(WNAME, cv.WND_PROP_VISIBLE) < 1:
+            break
     cv.destroyAllWindows()
