@@ -124,6 +124,9 @@ def fit_b(a: float, b: float, c: float, h: float, k: float, points: List[Tuple[i
 # @jit(nopython=True)
 def fit_c(a: float, b: float, c: float, h: float, k: float, points: List[Tuple[int, int]],
           height, width, val) -> Tuple[float, float, float, float]:
+
+    return 2.1
+
     lastRank = rank_ellipse(a, b, c, h, k, points, height, width)
     # determine direction
     currRank = rank_ellipse(a, b, c + STEP_C, h, k, points, height, width)
@@ -154,8 +157,6 @@ def fit_c(a: float, b: float, c: float, h: float, k: float, points: List[Tuple[i
     # if True:
     #     show(a, b, c, k)
     return c
-
-    # return 2.13
 
 
 def fit_k(a: float, b: float, c: float, h: float, k: float, points: List[Tuple[int, int]],
