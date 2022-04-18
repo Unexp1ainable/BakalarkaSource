@@ -30,42 +30,57 @@ void mouseCallback(int event, int x, int y, int flags, void* userdata) {
 	}
 	if (event == cv::EVENT_MOUSEMOVE) {
 		if (px != NONE) {
-			el2.setH((-x + H / 2));
-			el2.setK(y);
+			el2.setH((-x + W / 2)/(double)W);
+			el2.setK(y/(double)H);
 		}
 	}
 }
 
 int main(int argc, char* argv[])
-{/*
-	Superellipse el1 = Superellipse(100, 50, 2.5, 10, 150);
-	el2 = Superellipse(150, 150, 2.5, 0, 0);
+{
+	/*
+	Superellipse el1 = Superellipse(0.2, 0.08, 2.5, 0.2, 0.2);
+	el2 = Superellipse(0.08,0.2, 2.5, 0.2, 0.2);
 	cv::namedWindow("img");
 	cv::setMouseCallback("img", mouseCallback);
 
-	//auto pts = el1.borderPoints();
-	//for (const auto& pt1 : pts) {
-	//	cv::Mat img = cv::Mat::zeros(H, W, CV_8U);
-	//	el1.draw(img);
-	//	auto pt = cv::Point(lround(pt1.x() + W / 2), lround(-pt1.y()));
-	//	pt.x = std::clamp(pt.x, 0, W);
-	//	pt.y = std::clamp(pt.y, 0, H);
-	//	cv::circle(img, pt, 5, 255);
+	auto pts = el1.borderPoints();
+	for (const auto& pt1 : pts) {
+		cv::Mat img = cv::Mat::zeros(H, W, CV_8U);
+		auto tel = el1;
+		tel.scale(W, H);
+		tel.draw(img);
+		auto pt = cv::Point(lround((pt1.x() + 0.5)*W), lround(-pt1.y()*H));
+		pt.x = std::clamp(pt.x, 0, W);
+		pt.y = std::clamp(pt.y, 0, H);
+		cv::circle(img, pt, 5, 255);
 
-	//	cv::imshow("img", img);
-	//	auto key = cv::waitKey(10);
-	//	if (key == 27) { // esc
-	//		break;
-	//	}
-	//}
+		cv::imshow("img", img);
+		auto key = cv::waitKey(10);
+		if (key == 27) {  //esc
+			break;
+		}
+	}
 
 	while (true) {
 		cv::Mat img = cv::Mat::zeros(H, W, CV_8U);
-		el1.draw(img);
-		el2.draw(img);
 		auto pts = el1.findPOIs(el2);
+		auto tel1 = el1;
+		auto tel2 = el2;
+		tel1.scale(W, H);
+		tel2.scale(W, H);
+		//auto a = tel1.bBox();
+		//cv::circle(img, cv::Point(a.first.x() + W / 2, -a.first.y()), 5, 120);
+		//cv::circle(img, cv::Point(a.second.x() + W / 2, -a.second.y()), 5 ,255);
+		//cv::rectangle(img, cv::Point(a.first.x() + W / 2, -a.second.y()), cv::Point(a.second.x() + W / 2, -a.first.y()), 255);
+		//a = tel2.bBox();
+		//cv::rectangle(img, cv::Point(a.first.x() + W / 2, -a.second.y()), cv::Point(a.second.x() + W / 2, -a.first.y()), 255);
+		//cv::circle(img, cv::Point(a.first.x() + W / 2, -a.first.y()), 5, 120);
+		//cv::circle(img, cv::Point(a.second.x() + W / 2, -a.second.y()), 5, 255);
+		tel1.draw(img);
+		tel2.draw(img);
 		for (auto& pt : pts) {
-			auto npt = cv::Point(lround(pt.x() + W / 2), lround(-pt.y()));
+			auto npt = cv::Point(lround(pt.x()*W + W / 2), lround(-pt.y()*H));
 			npt.x = std::clamp(npt.x, 0, W);
 			npt.y = std::clamp(npt.y, 0, H);
 			cv::circle(img, npt, 5, 255);
@@ -78,6 +93,7 @@ int main(int argc, char* argv[])
 		if (key == 27) { // esc
 			break;
 		}
+	}
 		/*
 			img = np.zeros((H, W), np.uint8)
 		el1.draw(img)
@@ -92,11 +108,13 @@ int main(int argc, char* argv[])
 		cv.imshow("img", img)
 		key = cv.waitKey(10)
 		if key == 27:  # esc
-			break
-
+			break;
+			
 
 	cv::destroyAllWindows();
+	return 0;
 	*/
+	
 	QApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::Round);
 	auto app = QApplication(argc, argv);
 	auto window = MainWindow();

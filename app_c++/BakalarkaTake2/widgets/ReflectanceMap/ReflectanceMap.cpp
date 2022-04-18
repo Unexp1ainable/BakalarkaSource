@@ -44,7 +44,7 @@ void ReflectanceMap::colorPixels(unsigned char a, unsigned char b, unsigned char
 	for (int i = 0; i < 4; i++) {
 		auto mask = m_grayMaps[i].createMaskFromColor(values[i], Qt::MaskOutColor);
 		auto imgCopy = m_maps[i].copy();
-		
+
 		for (int y = 0; y < imgCopy.height(); y++)
 		{
 			for (int x = 0; x < imgCopy.width(); x++)
@@ -55,7 +55,7 @@ void ReflectanceMap::colorPixels(unsigned char a, unsigned char b, unsigned char
 				}
 			}
 		}
-		
+
 		m_labels[i]->setQImage(imgCopy);
 	}
 	ui.mapOverviewLabel->setQImage(sumCopy);
@@ -77,4 +77,61 @@ void ReflectanceMap::point(double x, double y, QColor color)
 void ReflectanceMap::setPQ(double p, double q)
 {
 	ui.pqCoords->setText(QString::number(p) + ", " + QString::number(q));
+}
+
+void ReflectanceMap::drawSuperellipse(Superellipse el, Segments seg)
+{
+	auto imgOverview = ui.mapOverviewLabel->pixmap().toImage();
+	QImage img;
+
+	if (seg == Segments::Q1) {
+		img = ui.map0Label->pixmap().toImage();
+	}
+	else if (seg == Segments::Q2) {
+		img = ui.map1Label->pixmap().toImage();
+	}
+	else if (seg == Segments::Q3) {
+		img = ui.map2Label->pixmap().toImage();
+	}
+	else {
+		img = ui.map3Label->pixmap().toImage();
+	}
+
+	int h = img.height();
+	int w = img.width();
+	int wh = w / 2;
+	Superellipse tmp = el;
+	tmp.scale(w, h);
+	auto pts = tmp.rasterize();
+	for (auto pt : pts) {
+		pt = QPoint(pt.x() + wh, -pt.y());
+		if (0 <= pt.x() && pt.x() < w && 0 <= pt.y() && pt.y() < h)
+			img.setPixelColor(pt, Qt::white);
+	}
+	h = imgOverview.height();
+	w = imgOverview.width();
+	wh = w / 2;
+	tmp = el;
+	tmp.scale(w, h);
+	pts = tmp.rasterize();
+	for (auto pt : pts) {
+		pt = QPoint(pt.x() + wh, -pt.y());
+		if (0 <= pt.x() && pt.x() < w && 0 <= pt.y() && pt.y() < h)
+			imgOverview.setPixelColor(pt.x(), pt.y(), Qt::white);
+	}
+
+	if (seg == Segments::Q1) {
+		ui.map0Label->setQImage(img);
+	}
+	else if (seg == Segments::Q2) {
+		ui.map1Label->setQImage(img);
+	}
+	else if (seg == Segments::Q3) {
+		ui.map2Label->setQImage(img);
+	}
+	else {
+		ui.map3Label->setQImage(img);
+	}
+
+	ui.mapOverviewLabel->setQImage(imgOverview);
 }

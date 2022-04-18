@@ -9,6 +9,45 @@ Superellipse::Superellipse(double a, double b, double c, double h, double k) : m
 	calculateBoundingBox();
 }
 
+void Superellipse::changeSegment(Segments seg, int width, int height)
+{
+	if (seg == Segments::Q1) {
+		return;
+	}
+
+	double olda = m_a;
+	double oldb = m_b;
+	double oldh = m_h;
+	double oldk = m_k;
+
+	if (seg == Segments::Q2) {
+		m_a = oldb;
+		m_b = olda;
+		m_h = -oldk - oldb + width / 2.;
+		m_k = -oldh - olda + height / 2.;
+	}
+	else if (seg == Segments::Q3) {
+		m_k = height - oldk - 2 * oldb;
+	}
+	else if (seg == Segments::Q4) {
+		m_a = oldb;
+		m_b = olda;
+		m_h = -width / 2. + oldk + oldb;
+		m_k = +oldh - olda + height / 2.;
+	}
+
+	calculateBoundingBox();
+}
+
+void Superellipse::scale(int width, int height)
+{
+	m_a *= width;
+	m_b *= height;
+	m_h *= width;
+	m_k *= height;
+	calculateBoundingBox();
+}
+
 RootResult Superellipse::rootsX(double y) const
 {
 	auto mid = 1 - pow(abs((y + m_k + m_b) / m_b), (m_c));
@@ -136,7 +175,7 @@ void Superellipse::draw(cv::Mat& img) const
 	auto points = rasterize();
 	int wi = img.cols;
 	int hi = img.rows;
-	int hx = lround(hi / 2);
+	int hx = lround(hi / 2.);
 
 	for (auto [x, y] : points) {
 		x += hx;
@@ -149,6 +188,9 @@ void Superellipse::draw(cv::Mat& img) const
 
 vector<QPointF> Superellipse::borderPoints() const
 {
+	double xstep = abs(m_bBox.second.x() - m_bBox.first.x())/250.;
+	double ystep = abs(m_bBox.second.y() - m_bBox.first.y())/250.;
+	double step = xstep < ystep ? xstep : ystep;
 	double x = -m_h;
 	double y = -m_k;
 	vector<QPointF> result{ {x,y} };
@@ -156,11 +198,11 @@ vector<QPointF> Superellipse::borderPoints() const
 	// top right
 	while (true)
 	{
-		x++;
+		x+=step;
 		auto res = rootsY(x);
 		double ny = 0.;
 		if (res.n == 0) {
-			x--;
+			x-=step;
 			break;
 		}
 		if (res.n == 1) {
@@ -173,8 +215,8 @@ vector<QPointF> Superellipse::borderPoints() const
 			else {
 				ny = res.r2;
 			}
-			if (abs(y - ny) > 1) {
-				x--;
+			if (abs(y - ny) > step) {
+				x-=step;
 				break;
 			}
 			y = ny;
@@ -185,11 +227,11 @@ vector<QPointF> Superellipse::borderPoints() const
 	// right
 	while (true)
 	{
-		y--;
+		y-=step;
 		auto res = rootsX(y);
 		double nx = 0.;
 		if (res.n == 0) {
-			y++;
+			y+=step;
 			break;
 		}
 		if (res.n == 1) {
@@ -202,8 +244,8 @@ vector<QPointF> Superellipse::borderPoints() const
 			else {
 				nx = res.r2;
 			}
-			if (abs(x - nx) > 1) {
-				y++;
+			if (abs(x - nx) > step) {
+				y+=step;
 				break;
 			}
 			x = nx;
@@ -214,11 +256,11 @@ vector<QPointF> Superellipse::borderPoints() const
 	// down
 	while (true)
 	{
-		x--;
+		x-=step;
 		auto res = rootsY(x);
 		double ny = 0.;
 		if (res.n == 0) {
-			x++;
+			x+=step;
 			break;
 		}
 		if (res.n == 1) {
@@ -231,8 +273,8 @@ vector<QPointF> Superellipse::borderPoints() const
 			else {
 				ny = res.r2;
 			}
-			if (abs(y - ny) > 1) {
-				x++;
+			if (abs(y - ny) > step) {
+				x+=step;
 				break;
 			}
 			y = ny;
@@ -243,11 +285,11 @@ vector<QPointF> Superellipse::borderPoints() const
 	// left
 	while (true)
 	{
-		y++;
+		y+=step;
 		auto res = rootsX(y);
 		double nx = 0.;
 		if (res.n == 0) {
-			y--;
+			y-=step;
 			break;
 		}
 		if (res.n == 1) {
@@ -260,8 +302,8 @@ vector<QPointF> Superellipse::borderPoints() const
 			else {
 				nx = res.r2;
 			}
-			if (abs(x - nx) > 1) {
-				y--;
+			if (abs(x - nx) > step) {
+				y-=step;
 				break;
 			}
 			x = nx;
@@ -272,11 +314,11 @@ vector<QPointF> Superellipse::borderPoints() const
 	// top left
 	while (x < -m_h)
 	{
-		x++;
+		x+=step;
 		auto res = rootsY(x);
 		double ny = 0.;
 		if (res.n == 0) {
-			x--;
+			x-=step;
 			break;
 		}
 		if (res.n == 1) {
@@ -289,8 +331,8 @@ vector<QPointF> Superellipse::borderPoints() const
 			else {
 				ny = res.r2;
 			}
-			if (abs(y - ny) > 1) {
-				x--;
+			if (abs(y - ny) > step) {
+				x-=step;
 				break;
 			}
 			y = ny;
@@ -302,16 +344,23 @@ vector<QPointF> Superellipse::borderPoints() const
 
 vector<QPointF> Superellipse::findPOIs(const Superellipse& el2) const
 {
+	vector<QPointF> results{};
+	if (isNull() || el2.isNull())
+		return results;
+
 	static constexpr int const NONE = 9999999;
 	double globalMin = NONE;
 	QPointF gmpt;
+
+	double xstep = abs(m_bBox.second.x() - m_bBox.first.x()) / 250.;
+	double ystep = abs(m_bBox.second.y() - m_bBox.first.y()) / 250.;
+	double step = xstep < ystep ? xstep : ystep;
 
 	double lastDiff = 0.;
 	double lastX = 0.;
 	double lastY = 0.;
 	bool expectIntersection = false;
 	bool recovering = false;
-	vector<QPointF> results{};
 
 	bool ok;
 
@@ -336,19 +385,19 @@ vector<QPointF> Superellipse::findPOIs(const Superellipse& el2) const
 			}
 		}
 
-		if (diff < 1 && !recovering) {
+		if (diff < step*2 && !recovering) {
 			expectIntersection = true;
 			lastDiff = diff;
 			lastX = x;
 			lastY = y;
 		}
-		if (diff > 1) {
+		if (diff > step) {
 			recovering = false;
 		}
 
 		// look for closest points
 		if (diff < globalMin) {
-			gmpt = QPointF((pt.x() + x) / 2, (pt.y() + y)/2);
+			gmpt = QPointF((pt.x() + x) / 2., (pt.y() + y)/2);
 			globalMin = diff;
 		}
 	}
@@ -368,6 +417,11 @@ vector<QPointF> Superellipse::findPOIs(const Superellipse& el2) const
 	}
 
 	return results;
+}
+
+bool Superellipse::isNull() const 
+{
+	return m_bBox.first.x() == m_bBox.second.x() || m_bBox.first.y() == m_bBox.second.y();
 }
 
 void Superellipse::calculateBoundingBox()

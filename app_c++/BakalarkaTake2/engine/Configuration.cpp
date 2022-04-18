@@ -1,8 +1,9 @@
 #include "Configuration.h"
 
-#include <QTextStream>
 #include <QFile>
 #include <QMessageBox>
+#include <iostream>
+#include <fstream>
 
 
 Configuration::Configuration()
@@ -24,7 +25,6 @@ void Configuration::setPortAngle(double angle)
 	QDomText newNodeText = m_xml.createTextNode(QString::number(angle));
 	newEl.appendChild(newNodeText);
 	el.parentNode().replaceChild(newEl, el);
-	save();
 }
 
 void Configuration::setAlpha(Segments seg, double alpha)
@@ -49,7 +49,6 @@ void Configuration::setAlpha(Segments seg, double alpha)
 	QDomText newNodeText = m_xml.createTextNode(QString::number(alpha));
 	newEl.appendChild(newNodeText);
 	el.parentNode().replaceChild(newEl, el);
-	save();
 }
 
 void Configuration::setBeta(Segments seg, double beta)
@@ -74,7 +73,6 @@ void Configuration::setBeta(Segments seg, double beta)
 	QDomText newNodeText = m_xml.createTextNode(QString::number(beta));
 	newEl.appendChild(newNodeText);
 	el.parentNode().replaceChild(newEl, el);
-	save();
 }
 
 void Configuration::load()
@@ -156,17 +154,9 @@ void Configuration::createDefault()
 
 void Configuration::save() const
 {
-	QFile file(CFG_FILE_NAME);
-	if (file.open(QIODevice::ReadWrite))
-	{
-		QTextStream stream(&file);
-		auto a = m_xml.toString();
-		stream << m_xml.toString();
-		file.close();
-	}
-	else {
-		qDebug("Could not open file.");
-	}
+	auto a = m_xml.toString();
+	std::ofstream out(CFG_FILE_NAME);
+	out << a.toStdString();
 }
 
 void Configuration::errMsg(QString msg)

@@ -15,6 +15,7 @@ enum class Segments {
 class Configuration {
 public:
 	Configuration();
+	~Configuration(){ save(); }
 
 	double portAngle() { return m_portAngle; };
 	void setPortAngle(double angle);
@@ -25,10 +26,10 @@ public:
 	double beta(int seg) { return m_betas[m_segVec[seg]]; };
 	void setBeta(Segments seg, double beta);
 
+	void save() const;
 protected:
 	void load();
 	void createDefault();
-	void save() const;
 
 	void errMsg(QString msg);
 

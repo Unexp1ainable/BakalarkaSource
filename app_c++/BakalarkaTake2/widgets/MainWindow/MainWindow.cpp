@@ -6,12 +6,11 @@
 #include <fstream>
 
 
-
 using namespace std;
 using namespace cv;
 
 MainWindow::MainWindow(QWidget* parent)
-	: QMainWindow(parent), m_cfg()
+	: QMainWindow(parent), m_cfg(), m_ipt()
 {
 	setupUi(this);
 	auto sizes = splitter->sizes();
@@ -29,12 +28,12 @@ MainWindow::MainWindow(QWidget* parent)
 	// TODO remove
 	try
 	{
-		loadReflectanceMaps("C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/Q4-upravene-spravne/5kV-upravene-spravne/5kV_10mm_3_u.png");
+		loadReflectanceMaps("C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/source/testmaps/5kV_10mm_3_u.png");
 		array<QString, 4> filenames = {
 				"C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/2022-04-11 data pro Sama konst GO/5 kV/5kV_10mm_1.png",
 				"C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/2022-04-11 data pro Sama konst GO/5 kV/5kV_10mm_2.png",
-				"C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/2022-04-11 data pro Sama konst GO/5 kV/5kV_10mm_3.png",
 				"C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/2022-04-11 data pro Sama konst GO/5 kV/5kV_10mm_4.png",
+				"C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/2022-04-11 data pro Sama konst GO/5 kV/5kV_10mm_3.png",
 		};
 		loadBSEImages(filenames);
 	}
@@ -65,11 +64,8 @@ void MainWindow::loadReflectanceMaps(QString filename) {
 	// prepare BGR images
 	m_origMaps[0] = imread(filename.toStdString());
 	for (int i = 1; i < 4; i++) {
-		cv::rotate(m_origMaps[i - 1], m_origMaps[i], ROTATE_90_CLOCKWISE);
+		cv::rotate(m_origMaps[i - 1], m_origMaps[i], ROTATE_90_COUNTERCLOCKWISE);
 	}
-
-	// switch last 2 to keep logical order in UI
-	swap(m_origMaps[2], m_origMaps[3]);
 
 	processReflectanceMaps();
 }
@@ -142,6 +138,7 @@ void MainWindow::processBSEImages()
 	for (int i = 0; i < 4; i++) {
 		//rotate images
 		m_origImgs[i].copyTo(m_imgs[i]);
+
 		// apply brightness contrast
 		cv::convertScaleAbs(m_imgs[i], m_imgs[i], m_cfg.alpha(i), m_cfg.beta(i));
 	}
@@ -161,6 +158,7 @@ void MainWindow::showNormalImage()
 
 void MainWindow::onDetectorSettingsChanged()
 {
+	m_cfg.save();
 	processReflectanceMaps();
 	processBSEImages();
 }
@@ -170,18 +168,47 @@ void MainWindow::onSelected(double x, double y)
 {
 	int trueX = m_imgs[0].cols * x;
 	int trueY = m_imgs[0].rows * y;
-	auto a = m_grayImgs[0].at<uint8_t>(trueY, trueX);
-	auto b = m_grayImgs[1].at<uint8_t>(trueY, trueX);
-	auto c = m_grayImgs[2].at<uint8_t>(trueY, trueX);
-	auto d = m_grayImgs[3].at<uint8_t>(trueY, trueX);
+	int a = m_grayImgs[0].at<uint8_t>(trueY, trueX);
+	int b = m_grayImgs[1].at<uint8_t>(trueY, trueX);
+	int c = m_grayImgs[2].at<uint8_t>(trueY, trueX);
+	int d = m_grayImgs[3].at<uint8_t>(trueY, trueX);
 	reflectanceMap->colorPixels(a, b, c, d);
 
+	auto el1 = Superellipse(m_ipt.getA(a), m_ipt.getB(a), m_ipt.getC(a), 0, m_ipt.getK(a));
+	reflectanceMap->drawSuperellipse(el1, Segments::Q1);
+	auto el2 = Superellipse(m_ipt.getA(b), m_ipt.getB(b), m_ipt.getC(b), 0, m_ipt.getK(b));
+	el2.changeSegment(Segments::Q2);
+	reflectanceMap->drawSuperellipse(el2, Segments::Q2);
+	auto el3 = Superellipse(m_ipt.getA(c), m_ipt.getB(c), m_ipt.getC(c), 0, m_ipt.getK(c));
+	el3.changeSegment(Segments::Q3);
+	reflectanceMap->drawSuperellipse(el3, Segments::Q3);
+	auto el4 = Superellipse(m_ipt.getA(d), m_ipt.getB(d), m_ipt.getC(d), 0, m_ipt.getK(d));
+	el4.changeSegment(Segments::Q4);
+	reflectanceMap->drawSuperellipse(el4, Segments::Q4);
+
+	auto npts12 = el1.findPOIs(el2);
+	auto npts13 = el1.findPOIs(el3);
+	auto npts14 = el1.findPOIs(el4);
+	auto npts23 = el2.findPOIs(el3);
+	auto npts24 = el2.findPOIs(el4);
+	auto npts34 = el3.findPOIs(el4);
+
+	assert(npts12.size() != 0);
+	assert(npts13.size() != 0);
+	assert(npts14.size() != 0);
+	assert(npts23.size() != 0);
+	assert(npts24.size() != 0);
+	assert(npts34.size() != 0);
+
+	evaluatePoints(npts12, npts13, npts14, npts23, npts24, npts34);
 }
 
 void MainWindow::onSwapped(int first, int second)
 {
 	swap(m_imgs[first], m_imgs[second]);
+	swap(m_origImgs[first], m_origImgs[second]);
 	swap(m_grayImgs[first], m_grayImgs[second]);
+	processBSEImages();
 }
 
 void MainWindow::onDetectorSettingsInvoked(bool checked)
@@ -194,4 +221,129 @@ void MainWindow::onDetectorSettingsInvoked(bool checked)
 	m_angleDialog->show();
 	m_angleDialog->raise();
 	m_angleDialog->activateWindow();
+}
+
+
+QPointF MainWindow::evaluatePoints(std::vector<QPointF>& npts12, std::vector<QPointF>& npts13, std::vector<QPointF>& npts14, std::vector<QPointF>& npts23, std::vector<QPointF>& npts24, std::vector<QPointF>& npts34) 
+{
+	std::vector<QPointF> pts;
+	pts.insert(pts.end(), npts12.begin(), npts12.end());
+	pts.insert(pts.end(), npts13.begin(), npts13.end());
+	pts.insert(pts.end(), npts14.begin(), npts14.end());
+	pts.insert(pts.end(), npts23.begin(), npts23.end());
+	pts.insert(pts.end(), npts24.begin(), npts24.end());
+	pts.insert(pts.end(), npts34.begin(), npts34.end());
+
+	double sumptx = 0.;
+	double sumpty = 0.;
+	for (const auto& pt : pts) {
+		reflectanceMap->point(pt.x() + 0.5, -pt.y());
+		sumptx += pt.x();
+		sumpty += pt.y();
+	}
+	sumptx /= pts.size();
+	sumpty /= pts.size();
+
+	std::array<std::vector<QPointF>*, 6> grouped = { &npts12, &npts13, &npts14, &npts23, &npts24, &npts34 };
+	std::array<bool, 6> flags;
+	flags.fill(false);
+	std::array<QPointF, 6> finals{};
+
+	// pre-save solitary points
+	for (int i = 0; i < 6; i++) {
+		if (grouped[i]->size() == 1) {
+			finals[i] = (*grouped[i])[0];
+			flags[i] = true;
+		}
+	}
+
+	// remove too distant points
+	for (int i = 0; i < 6; i++) {
+		if (flags[i])
+			continue;
+		double lowest = 1.;
+		for (const auto& [x, y] : *grouped[i]) {
+			double tx = x - sumptx;
+			double ty = y - sumpty;
+			double res = tx * tx + ty * ty;
+			if (lowest > res) {
+				lowest = res;
+			}
+		}
+		lowest = sqrt(lowest);
+		for (int j = 0; j < (*grouped[i]).size(); j++) {
+			if (sqrt(pow((*grouped[i])[j].x()-sumptx, 2) + pow((*grouped[i])[j].y()-sumpty, 2)) - lowest > 0.1) {
+				grouped[i]->erase(grouped[i]->begin() + j);
+			}
+		}
+
+		// check if solitary
+		if (grouped[i]->size() == 1) {
+			finals[i] = (*grouped[i])[0];
+			flags[i] = true;
+		}
+	}
+
+	// recalculate midpoint
+	sumptx = 0.;
+	sumpty = 0.;
+	int n = 0;
+	for (const auto group : grouped) {
+		for (const auto& [x, y] : *group) {
+			sumptx += x;
+			sumpty += y;
+			n++;
+		}
+	}
+	sumptx /= n;
+	sumpty /= n;
+
+	// final classification
+	for (int i = 0; i < 6; i++) {
+		if (flags[i])
+			continue;
+
+		double lowest = 1.;
+		QPointF lowestPt;
+		for (const auto& pt : *grouped[i]) {
+			double tx = pt.x() - sumptx;
+			double ty = pt.y() - sumpty;
+			double res = tx * tx + ty * ty;
+			if (lowest > res) {
+				lowest = res;
+				lowestPt = pt;
+			}
+		}
+		finals[i] = lowestPt;
+
+		// TODO close points handling
+	}
+	sumptx = 0.;
+	sumpty = 0.;
+	for (const auto& [x, y] : finals) {
+		reflectanceMap->point(x + 0.5, -y, Qt::cyan);
+		sumptx += x;
+		sumpty += y;
+	}
+	sumptx /= 6;
+	sumpty /= 6;
+
+	reflectanceMap->point(sumptx + 0.5, -sumpty, Qt::white);
+
+	double rangle = -m_cfg.portAngle() * (CV_PI / 180);
+
+	double s = sin(rangle);
+	double c = cos(rangle);
+
+	// rotate point
+	double ty = sumpty+0.5;
+	double cx = sumptx * c - ty * s;
+	double cy = sumptx * s + ty * c;
+
+	cy -= 0.5;
+
+	reflectanceMap->point(cx + 0.5, -cy, Qt::darkGreen);
+
+
+	return QPointF(sumptx,sumpty);
 }

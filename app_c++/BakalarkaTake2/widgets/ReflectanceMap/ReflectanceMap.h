@@ -10,6 +10,8 @@
 
 #include <opencv2/opencv.hpp>
 #include "ui_ReflectanceMap.h"
+#include "../../engine/Superellipse.h"
+#include "../../engine/Configuration.h"
 
 class ReflectanceMap : public QWidget
 {
@@ -23,6 +25,7 @@ public:
 	void colorPixels(unsigned char a, unsigned char b, unsigned char c, unsigned char d);
 	void point(double x, double y, QColor = Qt::magenta);
 	void setPQ(double p, double q);
+	void drawSuperellipse(Superellipse el, Segments seg);
 
 protected:
 	std::array<ImageLabel*, 4> m_labels;

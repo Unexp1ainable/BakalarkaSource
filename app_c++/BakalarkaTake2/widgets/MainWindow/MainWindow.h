@@ -10,6 +10,7 @@
 #include "ui_MainWindow.h"
 #include "../../engine/Superellipse.h"
 #include "../../engine/Configuration.h"
+#include "../../engine/Interpolator.h"
 #include "../DetectorSettingsDialog/DetectorSettingsDialog.h"
 
 
@@ -27,6 +28,7 @@ protected:
 	void loadBSEImages(std::array<QString, 4> paths = {""});
 	void processBSEImages();
 	void showNormalImage();
+	QPointF evaluatePoints(std::vector<QPointF>& npts12, std::vector<QPointF>& npts13, std::vector<QPointF>& npts14, std::vector<QPointF>& npts23, std::vector<QPointF>& npts24, std::vector<QPointF>& npts34);
 	
 	std::array<std::array<cv::Mat, 256>, 4> m_masks;
 
@@ -41,6 +43,7 @@ protected:
 	DetectorSettingsDialog* m_angleDialog = nullptr;
 
 	Configuration m_cfg;
+	Interpolator m_ipt;
 
 protected slots:
 	void onLoadReflectanceMaps(bool checked) { loadReflectanceMaps(); };

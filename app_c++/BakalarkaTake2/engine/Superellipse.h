@@ -6,6 +6,7 @@
 
 #include <boost/math/interpolators/pchip.hpp>
 #include <opencv2/opencv.hpp>
+#include "Configuration.h"
 
 
 struct RootResult;
@@ -23,8 +24,21 @@ public:
     double k() const { return m_k; }
     std::pair<QPointF, QPointF> bBox() const { return m_bBox; };
 
+    void setA(double a) { m_a = a; calculateBoundingBox(); }
+    void setB(double b) { m_b = b; calculateBoundingBox(); }
+    void setC(double c) { m_c = c; calculateBoundingBox(); }
     void setH(double h) { m_h = h; calculateBoundingBox(); }
     void setK(double k) { m_k = k; calculateBoundingBox(); }
+
+    /**
+     * @brief Transform ellipse from being bound to Q1 (default) to another segment. 
+     * Works ONLY for transformation from Q1 to another.
+     * @param seg Target segment
+     * @param width Canvas width
+     * @param height Canvas height
+    */
+    void changeSegment(Segments seg, int width = 1, int height = 1);
+    void scale(int width, int height);
 
     RootResult rootsX(double y) const;
     RootResult rootsY(double x) const;
@@ -33,9 +47,9 @@ public:
     std::vector<QPoint> rasterize() const;
     void draw(cv::Mat& img) const;
     std::vector<QPointF> borderPoints() const;
-    QPointF closestMidpoint(const Superellipse& el2) const;
-    std::vector<QPointF> intersections(const Superellipse& el2) const;
     std::vector<QPointF> findPOIs(const Superellipse& el2) const;
+
+    bool isNull() const;
 
 protected:
     void calculateBoundingBox();

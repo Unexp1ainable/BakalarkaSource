@@ -263,9 +263,11 @@ def fit_ellipse(img: np.ndarray, value: int = None, name: str = "") -> Tuple[flo
 
     try:
         with open(outdir + "output.csv", "a") as file:
-            file.write(str(value) + ";" + str(a) + ";" + str(b) + ";" + str(c) + ";" + str(k) + "\n")
+            file.write(str(value) + ";" + str(a/width) + ";" + str(b/height) + ";" + str(c) + ";" + str(k/height) + "\n")
     except:
-        print("Fitted for " + str(value) + ": a=" + str(a) + ", b=" + str(b) + ", c=" + str(c) + ", k=" + str(k) + "\n")
+        print(
+            "Fitted for " + str(value) + ": a=" + str(a / width) + ", b=" + str(b / height) + ", c=" + str(c) + ", k=" +
+            str(k / height) + "\n")
     return (a, b, c, 0, k)
 
 
