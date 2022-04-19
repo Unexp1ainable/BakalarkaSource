@@ -36,6 +36,7 @@ std::vector<double> valueData = {
 	233.5,
 	241.0,
 	248.5,
+	256.0
 };
 
 std::vector<double> aData = {
@@ -67,6 +68,7 @@ std::vector<double> aData = {
 		0.2534065246582031,
 		0.19476699829101562,
 		0.117279052734375,
+		0.0,
 		0.0,
 		0.0,
 		0.0,
@@ -108,6 +110,7 @@ std::vector<double> bData = {
 	0.0,
 	0.0,
 	0.0,
+	0.0,
 	0.0 };
 
 std::vector<double> kData = {
@@ -140,6 +143,7 @@ std::vector<double> kData = {
 	0.7888698577880859,
 	0.8460845947265625,
 	0.8876953125,
+	0.0,
 	0.0,
 	0.0,
 	0.0,

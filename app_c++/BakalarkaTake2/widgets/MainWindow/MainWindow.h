@@ -5,6 +5,7 @@
 #include <QString>
 
 #include <array>
+#include <memory>
 
 #include <opencv2/opencv.hpp>
 #include "ui_MainWindow.h"
@@ -28,8 +29,9 @@ protected:
 	void loadBSEImages(std::array<QString, 4> paths = {""});
 	void processBSEImages();
 	void showNormalImage();
+	QPointF evaluatePointsGraphic(std::vector<QPointF>& npts12, std::vector<QPointF>& npts13, std::vector<QPointF>& npts14, std::vector<QPointF>& npts23, std::vector<QPointF>& npts24, std::vector<QPointF>& npts34);
 	QPointF evaluatePoints(std::vector<QPointF>& npts12, std::vector<QPointF>& npts13, std::vector<QPointF>& npts14, std::vector<QPointF>& npts23, std::vector<QPointF>& npts24, std::vector<QPointF>& npts34);
-	
+	std::unique_ptr<std::array < std::array < std::vector<QPointF>,256>,256>> precalculateIntersections(Segments seg1, Segments seg2, unsigned long& status);
 	std::array<std::array<cv::Mat, 256>, 4> m_masks;
 
 	std::array<cv::Mat, 4> m_maps;
