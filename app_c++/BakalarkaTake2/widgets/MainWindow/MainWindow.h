@@ -31,7 +31,7 @@ protected:
 	void showNormalImage();
 	QPointF evaluatePointsGraphic(std::vector<QPointF>& npts12, std::vector<QPointF>& npts13, std::vector<QPointF>& npts14, std::vector<QPointF>& npts23, std::vector<QPointF>& npts24, std::vector<QPointF>& npts34);
 	QPointF evaluatePoints(std::vector<QPointF>& npts12, std::vector<QPointF>& npts13, std::vector<QPointF>& npts14, std::vector<QPointF>& npts23, std::vector<QPointF>& npts24, std::vector<QPointF>& npts34);
-	std::unique_ptr<std::array < std::array < std::vector<QPointF>,256>,256>> precalculateIntersections(Segments seg1, Segments seg2, unsigned long& status);
+	std::unique_ptr<std::array < std::array < std::vector<QPointF>,256>,256>> precalculateIntersections(Segments seg1, Segments seg2, unsigned long& status, const bool& cancelPoint);
 	std::array<std::array<cv::Mat, 256>, 4> m_masks;
 
 	std::array<cv::Mat, 4> m_maps;

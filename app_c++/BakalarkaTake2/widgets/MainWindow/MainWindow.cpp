@@ -163,6 +163,7 @@ void MainWindow::showNormalImage()
 
 
 	unsigned long status = 0;
+	bool cancelPoint = false;
 	std::vector<std::pair<Segments, Segments>> segs = { {Segments::Q1, Segments::Q2},
 														{Segments::Q1, Segments::Q3},
 														{Segments::Q1, Segments::Q4},
@@ -173,7 +174,7 @@ void MainWindow::showNormalImage()
 
 	std::array<std::future<std::unique_ptr<std::array < std::array < std::vector<QPointF>, 256>, 256>>>, 6> futures;
 	for (int i = 0; i < 6; ++i)
-		futures[i] = std::async(std::launch::async, [&segs, i, this, &status]() { return precalculateIntersections(segs[i].first, segs[i].second, status); });
+		futures[i] = std::async(std::launch::async, [&segs, i, this, &status, &cancelPoint]() { return precalculateIntersections(segs[i].first, segs[i].second, status, cancelPoint); });
 
 	bool end = false;
 	while (!end) {
@@ -185,8 +186,14 @@ void MainWindow::showNormalImage()
 				break;
 			}
 		}
+		if (progress.wasCanceled()) {
+			cancelPoint = true;
+		}
 	}
-
+	if (cancelPoint == true) {
+		return;
+	}
+	progress.cancel();
 
 	auto pts12 = futures[0].get();
 	auto pts13 = futures[1].get();
@@ -199,9 +206,6 @@ void MainWindow::showNormalImage()
 	QProgressDialog progress2("Calculating normals...", "Abort", 0, m_grayImgs[0].cols, this);
 	progress2.setWindowModality(Qt::WindowModal);
 
-	progress2.setValue(0);
-	if (progress2.wasCanceled())
-		return;
 	cv::Mat finImg = cv::Mat(m_grayImgs[0].size(), CV_8UC3);
 	for (int y = 0; y < m_grayImgs[0].cols; y++) {
 		for (int x = 0; x < m_grayImgs[0].cols; x++) {
@@ -223,9 +227,9 @@ void MainWindow::showNormalImage()
 			}
 
 			double z = sqrt(1 - mid);
-			int r = lround(res.x() * 128 + 128);
-			int g = lround(res.y() * 128 + 128);
-			int b = lround(z * 128 + 128);
+			int r = lround(res.x() * 128 + 127);
+			int g = lround(res.y() * 128 + 127);
+			int b = lround(z * 128 + 127);
 			finImg.at<Vec3b>(Point(x, y)) = Vec3b(b, g, r);
 		}
 
@@ -279,12 +283,12 @@ void MainWindow::onSelected(double x, double y)
 	auto npts24 = el2.findPOIs(el4);
 	auto npts34 = el3.findPOIs(el4);
 
-	assert(npts12.size() != 0);
-	assert(npts13.size() != 0);
-	assert(npts14.size() != 0);
-	assert(npts23.size() != 0);
-	assert(npts24.size() != 0);
-	assert(npts34.size() != 0);
+	//assert(npts12.size() != 0);
+	//assert(npts13.size() != 0);
+	//assert(npts14.size() != 0);
+	//assert(npts23.size() != 0);
+	//assert(npts24.size() != 0);
+	//assert(npts34.size() != 0);
 
 	evaluatePointsGraphic(npts12, npts13, npts14, npts23, npts24, npts34);
 }
@@ -320,6 +324,11 @@ QPointF MainWindow::evaluatePointsGraphic(std::vector<QPointF>& npts12, std::vec
 	pts.insert(pts.end(), npts24.begin(), npts24.end());
 	pts.insert(pts.end(), npts34.begin(), npts34.end());
 
+	// check if at least one POI was found
+	if (pts.size() == 0) {
+		return QPointF(0., 0.);
+	}
+
 	double sumptx = 0.;
 	double sumpty = 0.;
 	for (const auto& pt : pts) {
@@ -337,7 +346,10 @@ QPointF MainWindow::evaluatePointsGraphic(std::vector<QPointF>& npts12, std::vec
 
 	// pre-save solitary points
 	for (int i = 0; i < 6; i++) {
-		if (grouped[i]->size() == 1) {
+		if (grouped[i]->size() == 0) {
+			flags[i] = true;
+		}
+		else if (grouped[i]->size() == 1) {
 			finals[i] = (*grouped[i])[0];
 			flags[i] = true;
 		}
@@ -436,6 +448,25 @@ QPointF MainWindow::evaluatePointsGraphic(std::vector<QPointF>& npts12, std::vec
 QPointF MainWindow::evaluatePoints(std::vector<QPointF>& npts12, std::vector<QPointF>& npts13, std::vector<QPointF>& npts14, std::vector<QPointF>& npts23, std::vector<QPointF>& npts24, std::vector<QPointF>& npts34)
 {
 	std::array<std::vector<QPointF>*, 6> grouped = { &npts12, &npts13, &npts14, &npts23, &npts24, &npts34 };
+	int nEmpty = 0;
+	std::array<bool, 6> flags;
+	flags.fill(false);
+	std::array<QPointF, 6> finals;
+	finals.fill(QPointF(0., 0.));
+
+
+	// check if at least one POI was found
+	for (int i = 0; i < 6; i++) {
+		if ((*grouped[i]).size() == 0) {
+			flags[i] = true;
+		}
+		else {
+			nEmpty++;
+		}
+	}
+	if (nEmpty == 0) {
+		return QPointF(0., 0.);
+	}
 
 	double sumptx = 0.;
 	double sumpty = 0.;
@@ -450,13 +481,12 @@ QPointF MainWindow::evaluatePoints(std::vector<QPointF>& npts12, std::vector<QPo
 	sumptx /= n;
 	sumpty /= n;
 
-	std::array<bool, 6> flags;
-	flags.fill(false);
-	std::array<QPointF, 6> finals{};
-
 	// pre-save solitary points
 	for (int i = 0; i < 6; i++) {
-		if (grouped[i]->size() == 1) {
+		if (grouped[i]->size() == 0) {
+			flags[i] = true;
+		}
+		else if (grouped[i]->size() == 1) {
 			finals[i] = (*grouped[i])[0];
 			flags[i] = true;
 		}
@@ -523,19 +553,20 @@ QPointF MainWindow::evaluatePoints(std::vector<QPointF>& npts12, std::vector<QPo
 
 		// TODO close points handling
 	}
+
 	sumptx = 0.;
 	sumpty = 0.;
 	for (const auto& [x, y] : finals) {
 		sumptx += x;
 		sumpty += y;
 	}
-	sumptx /= 6;
-	sumpty /= 6;
+	sumptx /= nEmpty;
+	sumpty /= nEmpty;
 
 	// rotate point
 	double rangle = -m_cfg.portAngle() * (CV_PI / 180);
-	double s = sin(rangle);
-	double c = cos(rangle);
+	double s = std::sin(rangle);
+	double c = std::cos(rangle);
 	double ty = sumpty + 0.5;
 	double cx = sumptx * c - ty * s;
 	double cy = sumptx * s + ty * c;
@@ -544,7 +575,7 @@ QPointF MainWindow::evaluatePoints(std::vector<QPointF>& npts12, std::vector<QPo
 	return QPointF(cx, cy);
 }
 
-std::unique_ptr<std::array<std::array<std::vector<QPointF>, 256>, 256>> MainWindow::precalculateIntersections(Segments seg1, Segments seg2, unsigned long& status)
+std::unique_ptr<std::array<std::array<std::vector<QPointF>, 256>, 256>> MainWindow::precalculateIntersections(Segments seg1, Segments seg2, unsigned long& status, const bool& cancelPoint)
 {
 	auto res = make_unique<std::array<std::array<std::vector<QPointF>, 256>, 256>>();
 	for (int i = 0; i < 256; i++) {
@@ -556,6 +587,9 @@ std::unique_ptr<std::array<std::array<std::vector<QPointF>, 256>, 256>> MainWind
 			res->at(i)[j] = el1.findPOIs(el2);
 		}
 		status++;
+		if (cancelPoint == true) {
+			return res;
+		}
 	}
 	return res;
 }
