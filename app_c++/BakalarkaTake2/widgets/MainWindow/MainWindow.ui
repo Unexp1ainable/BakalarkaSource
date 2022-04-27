@@ -98,7 +98,7 @@
   </action>
   <action name="actionPort_angle">
    <property name="text">
-    <string>Port angle</string>
+    <string>Settings</string>
    </property>
   </action>
  </widget>

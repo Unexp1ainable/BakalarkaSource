@@ -61,12 +61,16 @@ void MainWindow::loadReflectanceMaps(QString filename) {
 	}
 
 	if (filename.isEmpty()) {
-		QMessageBox::critical(this, "Unable to open", "Reflectance map could not be loaded.");
 		return;
 	}
 
 	// prepare BGR images
 	m_origMaps[0] = imread(filename.toStdString());
+	if (m_origMaps[0].empty()) {
+		QMessageBox::critical(this, "Unable to open", "Reflectance map could not be loaded.");
+		return;
+	}
+
 	for (int i = 1; i < 4; i++) {
 		cv::rotate(m_origMaps[i - 1], m_origMaps[i], ROTATE_90_COUNTERCLOCKWISE);
 	}
@@ -206,8 +210,11 @@ void MainWindow::showNormalImage()
 	QProgressDialog progress2("Calculating normals...", "Abort", 0, m_grayImgs[0].cols, this);
 	progress2.setWindowModality(Qt::WindowModal);
 
+	auto file = std::ofstream("stuff");
+	file << m_grayImgs[0].cols << " " << m_grayImgs[0].rows << "\n";
+
 	cv::Mat finImg = cv::Mat(m_grayImgs[0].size(), CV_8UC3);
-	for (int y = 0; y < m_grayImgs[0].cols; y++) {
+	for (int y = 0; y < m_grayImgs[0].rows; y++) {
 		for (int x = 0; x < m_grayImgs[0].cols; x++) {
 			int v1 = m_grayImgs[0].at<uint8_t>(y, x);
 			int v2 = m_grayImgs[1].at<uint8_t>(y, x);
@@ -223,10 +230,10 @@ void MainWindow::showNormalImage()
 				double mag = sqrt(pow(res.x(), 2) + pow(res.y(), 2));
 				res.rx() /= mag;
 				res.ry() /= mag;
-				mid = 1.;
+				mid = 0.999;
 			}
-
 			double z = sqrt(1 - mid);
+			file << -res.x() << " " << res.y() << " " << z << "\n";
 			int r = lround(res.x() * 128 + 127);
 			int g = lround(res.y() * 128 + 127);
 			int b = lround(z * 128 + 127);

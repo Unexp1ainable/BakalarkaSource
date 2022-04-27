@@ -30,7 +30,15 @@ void SegmentManager::mouseMoveEvent(QMouseEvent* event)
 			auto y = event->pos().y();
 			auto xwidg = width();
 			auto ywidg = height();
-			m_moving = x * 2 / xwidg + y * 2 / ywidg * 2;
+			int mx = x * 2 / xwidg;
+			int my = y * 2 / ywidg;
+			if (my == 0) {
+				m_moving = mx;
+			}
+			else {
+				m_moving = 2 + 1 - mx;
+			}
+			//m_moving = x * 2 / xwidg + y * 2 / ywidg * 2;
 		}
 	}
 }
@@ -43,7 +51,17 @@ void SegmentManager::mouseReleaseEvent(QMouseEvent* event)
 			auto y = event->pos().y();
 			auto xwidg = width();
 			auto ywidg = height();
-			auto target = x * 2 / xwidg + y * 2 / ywidg * 2;
+			int target;
+			int mx = x * 2 / xwidg;
+			int my = y * 2 / ywidg;
+
+			if (my == 0) {
+				target = mx;
+			}
+			else {
+				target = 2 + 1 - mx;
+			}
+			//target = x * 2 / xwidg + y * 2 / ywidg * 2;
 
 			if (target < 0 || target == m_moving) {
 				return;
