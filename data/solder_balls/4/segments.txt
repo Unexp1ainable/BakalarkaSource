@@ -1,4 +1,0 @@
-ball_4_3.tif
-ball_4_4.tif
-ball_4_5.tif
-ball_4_6.tif

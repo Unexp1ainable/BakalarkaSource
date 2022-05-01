@@ -1,4 +1,0 @@
-fly_eye_2.tif
-fly_eye_3.tif
-fly_eye_4.tif
-fly_eye_5.tif
