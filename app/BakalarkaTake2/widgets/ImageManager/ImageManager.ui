@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ImageManager</class>
+ <widget class="QWidget" name="ImageManager">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>688</width>
+    <height>591</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>ImageManager</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="1,2">
+   <item>
+    <widget class="SegmentManager" name="segmentManager" native="true"/>
+   </item>
+   <item>
+    <widget class="ImageLabel" name="selector">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>TextLabel</string>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>SegmentManager</class>
+   <extends>QWidget</extends>
+   <header>../SegmentManager/SegmentManager.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ImageLabel</class>
+   <extends>QLabel</extends>
+   <header>../ImageLabel/ImageLabel.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>
