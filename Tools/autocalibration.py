@@ -1,11 +1,10 @@
 import cv2 as cv
 import numpy as np
 from skimage.exposure import match_histograms
-import argparse
 import matplotlib.pyplot as plt
 
 
-# Q4 is baseline
+# Q4 is the baseline
 PATH_BASELINE = "C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/calibration/5kV_10mm/Q4.png"
 
 

@@ -7,8 +7,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy import ndimage
 from skimage.morphology import skeletonize
-from numba import jit
 from ellipse_common import *
+from numba import jit
+
 
 UP = True
 DOWN = False
@@ -25,7 +26,7 @@ DIR_K = None
 
 ROUGH_ITERATIONS = 10
 SMOOTH_ITERATIONS = 10
-VISUALIZE = True
+VISUALIZE = False
 
 
 def show(a, b, c, k):
@@ -35,16 +36,7 @@ def show(a, b, c, k):
     cv.waitKey(1)
 
 
-def conditionalJIT(func):
-    def decorator(*args, **kwargs):
-        if VISUALIZE:
-            return func(*args, **kwargs)
-        else:
-            return jit(func, nopython=True)(*args, **kwargs)
-    return decorator
-
-
-@conditionalJIT
+@jit(nopython=True)
 def fit_a(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
           height, width, val) -> Tuple[float, float, float, float]:
     lastRank = rank_ellipse(a, b, c, 0, k, points, height, width)
@@ -75,12 +67,12 @@ def fit_a(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
                 if a < STEP_A:
                     break
 
-        if VISUALIZE:
-            show(a, b, c, k)
+        # if VISUALIZE:
+        #     show(a, b, c, k)
     return a
 
 
-@conditionalJIT
+@jit(nopython=True)
 def fit_b(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
           height, width, val) -> Tuple[float, float, float, float]:
     lastRank = rank_ellipse(a, b, c, 0, k, points, height, width)
@@ -111,12 +103,12 @@ def fit_b(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
                 if b < STEP_B:
                     break
 
-        if VISUALIZE:
-            show(a, b, c, k)
+        # if VISUALIZE:
+        #     show(a, b, c, k)
     return b
 
 
-@conditionalJIT
+@jit(nopython=True)
 def fit_c(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
           height, width, val) -> Tuple[float, float, float, float]:
     lastRank = rank_ellipse(a, b, c, 0, k, points, height, width)
@@ -147,13 +139,13 @@ def fit_c(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
                     break
                 c -= STEP_C
 
-        if VISUALIZE:
-            show(a, b, c, k)
+        # if VISUALIZE:
+        #     show(a, b, c, k)
 
     return c
 
 
-@conditionalJIT
+@jit(nopython=True)
 def fit_k(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
           height, width, val) -> Tuple[float, float, float, float]:
     lastRank = rank_ellipse(a, b, c, 0, k, points, height, width)
@@ -184,8 +176,8 @@ def fit_k(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
                 if k < -height:
                     break
 
-        if VISUALIZE:
-            show(a, b, c, k)
+        # if VISUALIZE:
+        #     show(a, b, c, k)
 
     return k
 
@@ -284,13 +276,14 @@ if __name__ == "__main__":
     PATH = "C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/Q4-upravene-spravne/all/5kV_10mm_3_u.png"
     VALUE = 192
     ANGLE = 150
+    VISUALIZE = True
 
     global img
     img = cv.imread(PATH, cv.IMREAD_GRAYSCALE)
     img = preprocessing(img, ANGLE)
     # colorimg = cv.cvtColor(img, cv.COLOR_GRAY2BGR)
     imgcopy = img.copy()
-    # img: np.ndarray = processing(img, VALUE)  # prepare visualizing image
+    img: np.ndarray = processing(img, VALUE)  # prepare visualizing image
 
     # shap = img.shape
     # img.resize((shap[0]+150, shap[1]), refcheck=False)

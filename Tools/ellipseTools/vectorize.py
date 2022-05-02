@@ -7,8 +7,8 @@ import numpy as np
 INTERPOLATE = True
 FIT = False
 
-MODE = INTERPOLATE
-# MODE = FIT
+# MODE = INTERPOLATE
+MODE = FIT
 
 if MODE == INTERPOLATE:
     from ellipse_interpolation import fit_ellipse, preprocessing
