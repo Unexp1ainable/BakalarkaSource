@@ -35,7 +35,16 @@ def show(a, b, c, k):
     cv.waitKey(1)
 
 
-@jit(nopython=True)
+def conditionalJIT(func):
+    def decorator(*args, **kwargs):
+        if VISUALIZE:
+            return func(*args, **kwargs)
+        else:
+            return jit(func, nopython=True)(*args, **kwargs)
+    return decorator
+
+
+@conditionalJIT
 def fit_a(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
           height, width, val) -> Tuple[float, float, float, float]:
     lastRank = rank_ellipse(a, b, c, 0, k, points, height, width)
@@ -66,12 +75,12 @@ def fit_a(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
                 if a < STEP_A:
                     break
 
-        # if VISUALIZE:
-        #     show(a, b, c, k)
+        if VISUALIZE:
+            show(a, b, c, k)
     return a
 
 
-@jit(nopython=True)
+@conditionalJIT
 def fit_b(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
           height, width, val) -> Tuple[float, float, float, float]:
     lastRank = rank_ellipse(a, b, c, 0, k, points, height, width)
@@ -102,12 +111,12 @@ def fit_b(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
                 if b < STEP_B:
                     break
 
-        # if VISUALIZE:
-        #     show(a, b, c, k)
+        if VISUALIZE:
+            show(a, b, c, k)
     return b
 
 
-@jit(nopython=True)
+@conditionalJIT
 def fit_c(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
           height, width, val) -> Tuple[float, float, float, float]:
     lastRank = rank_ellipse(a, b, c, 0, k, points, height, width)
@@ -138,13 +147,13 @@ def fit_c(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
                     break
                 c -= STEP_C
 
-        # if VISUALIZE:
-        #     show(a, b, c, k)
+        if VISUALIZE:
+            show(a, b, c, k)
 
     return c
 
 
-@jit(nopython=True)
+@conditionalJIT
 def fit_k(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
           height, width, val) -> Tuple[float, float, float, float]:
     lastRank = rank_ellipse(a, b, c, 0, k, points, height, width)
@@ -175,8 +184,8 @@ def fit_k(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
                 if k < -height:
                     break
 
-        # if VISUALIZE:
-        #     show(a, b, c, k)
+        if VISUALIZE:
+            show(a, b, c, k)
 
     return k
 
@@ -273,15 +282,15 @@ def fit_ellipse(img: np.ndarray, value: int = None, name: str = "") -> Tuple[flo
 
 if __name__ == "__main__":
     PATH = "C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/Q4-upravene-spravne/all/5kV_10mm_3_u.png"
-    VALUE = 195
-    VISUALIZE = True
-    ANGLE = 151
+    VALUE = 192
+    ANGLE = 150
 
     global img
     img = cv.imread(PATH, cv.IMREAD_GRAYSCALE)
     img = preprocessing(img, ANGLE)
+    # colorimg = cv.cvtColor(img, cv.COLOR_GRAY2BGR)
     imgcopy = img.copy()
-    img: np.ndarray = processing(img, VALUE)  # prepare visualizing image
+    # img: np.ndarray = processing(img, VALUE)  # prepare visualizing image
 
     # shap = img.shape
     # img.resize((shap[0]+150, shap[1]), refcheck=False)
@@ -290,7 +299,14 @@ if __name__ == "__main__":
     # prepare final image
 
     # draw final image
+    cv.destroyAllWindows()
+
+    # colorimg[img == VALUE] = (0, 0, 200)
+
     draw_ellipse(img, *res)
+    # draw_ellipse(colorimg, *res, (255, 255, 255))
     cv.imshow("fitted", img)
+    # cv.imshow("color", colorimg)
+    # cv.imwrite(f"ellipseOverlay{VALUE}.png", colorimg)
     cv.waitKey(0)
     cv.destroyAllWindows()

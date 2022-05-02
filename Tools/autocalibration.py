@@ -6,13 +6,13 @@ import matplotlib.pyplot as plt
 
 
 # Q4 is baseline
-PATH_BASELINE = "C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/calibration/5kV_20mm/Q4.png"
+PATH_BASELINE = "C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/calibration/5kV_10mm/Q4.png"
 
 
 if __name__ == "__main__":
-    paths = [("Q1", "C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/calibration/5kV_20mm/Q1.png"),
-             ("Q2", "C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/calibration/5kV_20mm/Q2.png"),
-             ("Q3", "C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/calibration/5kV_20mm/Q3.png"), ]
+    paths = [("Q1", "C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/calibration/5kV_10mm/Q1.png"),
+             ("Q2", "C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/calibration/5kV_10mm/Q2.png"),
+             ("Q3", "C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/calibration/5kV_10mm/Q3.png"), ]
     for name, path in paths:
         im_base = cv.imread(PATH_BASELINE, cv.IMREAD_GRAYSCALE)
         if im_base is None:
@@ -30,11 +30,11 @@ if __name__ == "__main__":
         h1[0] = 0
 
         h1 = h1/np.linalg.norm(h1)
-        plt.plot(h1)
+        plt.plot(h1, label="Segment 1")
         h2 = cv.calcHist([im_adjust], [0], None, [256], [0, 256])
         h2[0] = 0
         # h2 = h2/np.linalg.norm(h2)
-        # plt.plot(h2)
+        # plt.plot(h2, label="Segment 2")
 
         offset = np.argmax(h1) - np.argmax(h2)
         gain = 1
@@ -48,6 +48,7 @@ if __name__ == "__main__":
         im_res[im_res < 0] = 0
         im_res[im_res > 255] = 255
         im_res: np.ndarray
+        # without this noise, a periodic peaks could be created due to rounding
         im_res += np.random.random(im_res.shape)-0.5
         im_adjust = im_res.round().astype(np.uint8)
 
@@ -64,7 +65,7 @@ if __name__ == "__main__":
         h = h/np.linalg.norm(h)
 
         # cv.imshow("two", img)
-        plt.plot(h)
-
+        plt.plot(h, label="Segment 2")
+        plt.legend()
         plt.show()
         # cv.destroyAllWindows()

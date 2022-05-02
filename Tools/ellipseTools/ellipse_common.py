@@ -7,7 +7,7 @@ import numpy as np
 import cv2 as cv
 
 
-def draw_ellipse(img: np.ndarray, a: float, b: float, c: float, h: float, k: float) -> None:
+def draw_ellipse(img: np.ndarray, a: float, b: float, c: float, h: float, k: float, color=255) -> None:
     wi = img.shape[1]
     hi = img.shape[0]
     hx = hi//2
@@ -17,7 +17,7 @@ def draw_ellipse(img: np.ndarray, a: float, b: float, c: float, h: float, k: flo
         x += hx
         y = -y
         if 0 <= x < wi and 0 <= y < hi:
-            img[y][x] = 255
+            img[y][x] = color
 
 
 @jit(nopython=True)
