@@ -26,7 +26,7 @@ def removeStrip(imPath: str, hdrPath: str) -> None:
     cropped.save(tpath[:index] + "/cropped/" + tpath[index+1:])
 
 
-w = walk("C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/source/data", True)
+w = walk("C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/2022-04-13 Sn bulk", True)
 for root, dirs, files in w:
     for file in files:
         if file[-4:].lower() in [".tif", ".png"]:

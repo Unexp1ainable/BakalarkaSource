@@ -91,7 +91,7 @@ def finalize_canvas(img: np.ndarray) -> np.ndarray:
 
     # annotate horizontal lines
     t = H/HLINES_N
-    s = 1/HLINES_N
+    s = YMAX/HLINES_N
     for i in range(11):
         cv.putText(img, f"{s*i:.1f}", (0, H-round(i*t)+BORDER),
                    cv.FONT_HERSHEY_SIMPLEX, 0.3, (230, 230, 230),)
@@ -100,7 +100,7 @@ def finalize_canvas(img: np.ndarray) -> np.ndarray:
 
 
 def make_template(args):
-    global HSCALE, WSCALE, WSCALEI, roi_high
+    global HSCALE, WSCALE, WSCALEI, YMAX, roi_high
 
     if args.mode not in MODES:
         print("Column does not exist.", file=stderr)
@@ -120,7 +120,14 @@ def make_template(args):
             except:
                 pass
 
-    HSCALE = H
+    YMAX = 1
+    if data.max() > 1:
+        low = data.min()
+        high = data.max()
+        HSCALE = H/(high-low)
+        YMAX = high*1.1
+    else:
+        HSCALE = H
     WSCALE = W/256
     WSCALEI = round(WSCALE)
     roi_high = round(np.argmax(np.nonzero(data))*WSCALE)+BORDER
@@ -166,6 +173,7 @@ def onMouseRelease():
     global selected, roi_selected
     selected = None
     roi_selected = None
+    update_image()
 
 
 def onMouseMotion(x, y):
@@ -177,7 +185,7 @@ def onMouseMotion(x, y):
             y = H
         s = nodes[selected]
         nodes[selected] = (s[0], y)
-        update_image()
+        update_image((x, y))
     elif roi_selected is not None:
         if roi_selected == ROI0:
             if 0 < x < roi_high-10:
@@ -212,7 +220,7 @@ def load(s):
         nodes[i] = (round(ct[0]*WSCALE), round(H-ct[1]*HSCALE))
 
 
-def update_image():
+def update_image(handle=None):
     img = template.copy()
 
     # roi handles and lines
@@ -220,10 +228,12 @@ def update_image():
     y = round(0.02*HSCALE)
     cv.line(img, (x, y), (x, H+BORDER), (0, 255, 0), 2)
     cv.circle(img, (x, y), 5, (0, 255, 0), 3)
+    cv.putText(img, str(round(roi_low/WSCALE)), (x+8, y+5), cv.FONT_HERSHEY_SIMPLEX, 0.5, (230, 230, 230))
 
     x = round(roi_high)+BORDER
     cv.circle(img, (x, y), 5, (0, 255, 0), 3)
     cv.line(img, (x, y), (x, H+BORDER), (0, 255, 0), 2)
+    cv.putText(img, str(round(roi_high/WSCALE)), (x+8, y+5), cv.FONT_HERSHEY_SIMPLEX, 0.5, (230, 230, 230))
 
     # curve handles
     for x, y in nodes:
@@ -238,6 +248,11 @@ def update_image():
         cv.line(img, pt1, pt2, (150, 255, 150), 3)
         pt1 = pt2
 
+    if handle is not None:
+        cv.putText(
+            img, f"{(H-handle[1])/H*YMAX:.2f}", (handle[0]+45, handle[1]+30),
+            cv.FONT_HERSHEY_SIMPLEX, 0.5, (230, 230, 230))
+
     cv.imshow(WNAME, img)
 
 
@@ -249,14 +264,13 @@ def initialize_nodes():
         nodes.append((x, H-round(data[round(i/WSCALE)][0]*HSCALE)))
 
 
-if __name__ == "__main__":
-    global template
-
-    args = parse_args()
+def run(args, wname=WNAME):
+    global template, WNAME
+    WNAME = wname
     template = make_template(args)
 
-    cv.namedWindow(WNAME)
-    cv.setMouseCallback(WNAME, onMouseEvent)
+    cv.namedWindow(wname)
+    cv.setMouseCallback(wname, onMouseEvent)
     initialize_nodes()
     update_image()
 
@@ -269,11 +283,19 @@ if __name__ == "__main__":
             arr[1] = (H-arr[1]) / HSCALE
             print(list(zip(np.arange(0, 256+1, POINT_GAP), arr[1])))
             print(f"ROI: {round(roi_low/WSCALE)} - {round(roi_high//WSCALE)}")
+            with open("tmp.txt", "a", encoding="utf-8") as f:
+                print(str(list(zip(np.arange(0, 256+1, POINT_GAP), arr[1]))), file=f)
+                print(f"ROI: {round(roi_low/WSCALE)} - {round(roi_high//WSCALE)}\n", file=f)
         elif key == 108:  # l
             l = input("Insert loading string: ")
             load(l)
 
         # close on manual window close
-        if cv.getWindowProperty(WNAME, cv.WND_PROP_VISIBLE) < 1:
+        if cv.getWindowProperty(wname, cv.WND_PROP_VISIBLE) < 1:
             break
     cv.destroyAllWindows()
+
+
+if __name__ == "__main__":
+    args = parse_args()
+    run(args)

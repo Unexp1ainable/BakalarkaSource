@@ -24,7 +24,7 @@ def args(img, name):
 if __name__ == "__main__":
     dir = "C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/Q4-upravene-spravne/all/"
 
-    with open(dir + "list2.txt") as f:
+    with open(dir + "list.txt") as f:
         for line in f:
             name = line.strip()
             outdir = "output/" + name[:-4] + "/"
