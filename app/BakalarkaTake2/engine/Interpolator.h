@@ -1,7 +1,7 @@
 #pragma once
 
 #include <boost/math/interpolators/pchip.hpp>
-#include "Configuration.h"
+#include <vector>
 
 using boost::math::interpolators::pchip;
 

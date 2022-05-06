@@ -1,0 +1,107 @@
+5kV_10mm_3_u
+ROI: 6 - 148
+
+5kV_12mm_3_u
+ROI: 0 - 126
+
+5kV_14mm_3_u
+ROI: -1 - 89
+
+5kV_16mm_3_u
+ROI: -2 - 62
+
+5kV_18mm_3_u
+ROI: -8 - 42
+
+5kV_20mm_3_u
+ROI: -10 - 29
+
+10kV_10mm_3_u
+ROI: 24 - 192
+
+10kV_12mm_3_u
+ROI: 24 - 149
+
+10kV_14mm_3_u
+ROI: 21 - 114
+
+10kV_16mm_3_u
+ROI: 16 - 87
+
+10kV_18mm_3_u
+ROI: 12 - 77
+
+10kV_20mm_3_u
+ROI: 10 - 63
+
+15kV_10mm_3_u
+ROI: 36 - 221
+
+15kV_12mm_3_u
+ROI: 36 - 173
+
+15kV_14mm_3_u
+ROI: 27 - 132
+
+15kV_16mm_3_u
+ROI: 24 - 103
+
+15kV_18mm_3_u
+ROI: 23 - 97
+
+15kV_20mm_3_u
+ROI: 20 - 87
+
+20kV_10mm_3_u
+ROI: 40 - 264
+
+20kV_12mm_3_u
+ROI: 40 - 205
+
+20kV_14mm_3_u
+ROI: 37 - 157
+
+20kV_16mm_3_u
+ROI: 29 - 123
+
+20kV_18mm_3_u
+ROI: 27 - 96
+
+20kV_20mm_3_u
+ROI: 25 - 85
+
+25kV_10mm_3_u
+ROI: 45 - 284
+
+25kV_12mm_3_u
+ROI: 45 - 221
+
+25kV_14mm_3_u
+ROI: 39 - 169
+
+25kV_16mm_3_u
+ROI: 34 - 132
+
+25kV_18mm_3_u
+ROI: 26 - 104
+
+25kV_20mm_3_u
+ROI: 24 - 93
+
+30kV_10mm_3_u
+ROI: 48 - 271
+
+30kV_12mm_3_u
+ROI: 44 - 212
+
+30kV_14mm_3_u
+ROI: 39 - 164
+
+30kV_16mm_3_u
+ROI: 31 - 126
+
+30kV_18mm_3_u
+ROI: 28 - 100
+
+30kV_20mm_3_u
+ROI: 24 - 92
