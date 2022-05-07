@@ -11,7 +11,7 @@
 #include "ui_MainWindow.h"
 #include "../../engine/Superellipse.h"
 #include "../../engine/Configuration.h"
-#include "../../engine/Interpolator.h"
+#include "../../engine/RefMapEstimator.h"
 #include "../DetectorSettingsDialog/DetectorSettingsDialog.h"
 
 
@@ -45,7 +45,7 @@ protected:
 	DetectorSettingsDialog* m_angleDialog = nullptr;
 
 	Configuration m_cfg;
-	Interpolator m_ipt;
+	RefMapEstimator m_estimator{};
 
 protected slots:
 	void onLoadReflectanceMaps(bool checked) { loadReflectanceMaps(); };

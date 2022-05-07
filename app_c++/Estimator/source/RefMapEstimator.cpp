@@ -3,28 +3,34 @@
 #include <fstream>
 #include <charconv>
 #include <boost/algorithm/string.hpp>
-
+#include <cmath>
 
 using namespace std;
 
-RefMapEstimator::RefMapEstimator(const double energy, const double current, const double wd) :
+RefMapEstimator::RefMapEstimator(const double energy, const double wd, const double current) :
 	m_bc(current), m_wd(wd), m_be(energy),
-	m_a(range256(), load_a())
+	m_a(range(0, 256 + 1, 8), load_a(energy)),
+	m_b(range(0, 256 + 1, 8), load_b(wd)),
+	m_k(range(0, 256 + 1, 8), load_k(wd))
 {
-	pchip roi_l_pos(move(energy_range()), move(load_roi_l()));
-	pchip roi_h_pos(move(energy_range()), move(load_roi_h()));
-	m_roi_l = roi_l_pos(wd);
-	m_roi_h = roi_h_pos(wd);
+	// calculate roi
+	m_roi_l = load_roi_l();
+	m_roi_h = load_roi_h();
+
+	// compensate for a different current
+	m_roi_l	/= BASE_BC/current;
+	m_roi_h /= BASE_BC/current;
+
 }
 
 double RefMapEstimator::getA(int val)
 {
-	return 0.0;
+	return m_a(val);
 }
 
 double RefMapEstimator::getB(int val)
 {
-	return 0.0;
+	return m_b(val);
 }
 
 double RefMapEstimator::getC(int val)
@@ -34,79 +40,172 @@ double RefMapEstimator::getC(int val)
 
 double RefMapEstimator::getK(int val)
 {
-	return 0.0;
+	return m_k(val);
 }
 
-vector<double> RefMapEstimator::load_roi_l()
+double RefMapEstimator::load_roi_l()
 {
-	vector<double> result(6 ,0.);
-
 	auto file = ifstream(FILE_ROI_L);
-	string line;
-	for (int i = 0; i < 6; i++) {
-		getline(file, line);
-		double res = 0.;
-		from_chars(line.c_str(), line.c_str()+line.size(), res);
-		result[i] = res;
+	if (!file.is_open()) {
+		throw std::exception("Could not load data/roi_l file.");
 	}
 
+	vector<double> aData(N_POINTS_WD, 0.);
+	vector<double> bData(N_POINTS_WD, 0.);
+	string line;
+	for (int i = 0; i < N_POINTS_WD; i++) {
+		getline(file, line);
+
+		vector<string> v;
+		boost::split(v, line, boost::is_any_of(","));
+		if (v.size() != 2) {
+			throw exception("Wrong data for roil.");
+		}
+		from_chars(v[0].c_str(), v[0].c_str() + line.size(), aData[i]);
+		from_chars(v[1].c_str(), v[1].c_str() + line.size(), bData[i]);
+	}
+	pchip aPchip(wd_range(), move(aData));
+	pchip bPchip(wd_range(), move(bData));
+	double trueA = aPchip(m_wd);
+	double trueB = bPchip(m_wd);
+
+	double result = trueA * m_be + trueB;
 	return result;
 }
 
-vector<double> RefMapEstimator::load_roi_h()
+double RefMapEstimator::load_roi_h()
 {
-	vector<double> result(6, 0.);
-
 	auto file = ifstream(FILE_ROI_H);
-	string line;
-	for (int i = 0; i < 6; i++) {
-		getline(file, line);
-		double res = 0.;
-		from_chars(line.c_str(), line.c_str() + line.size(), res);
-		result[i] = res;
+	if (!file.is_open()) {
+		throw std::exception("Could not load data/roi_h file.");
 	}
 
+	vector<double> aData(N_POINTS_WD, 0.);
+	vector<double> bData(N_POINTS_WD, 0.);
+	string line;
+	for (int i = 0; i < N_POINTS_WD; i++) {
+		getline(file, line);
+
+		vector<string> v;
+		boost::split(v, line, boost::is_any_of(","));
+		if (v.size() != 2) {
+			throw exception("Wrong data for roih.");
+		}
+		from_chars(v[0].c_str(), v[0].c_str() + line.size(), aData[i]);
+		from_chars(v[1].c_str(), v[1].c_str() + line.size(), bData[i]);
+	}
+	pchip aPchip(wd_range(), move(aData));
+	pchip bPchip(wd_range(), move(bData));
+	double trueA = aPchip(m_wd);
+	double trueB = bPchip(m_wd);
+
+	double result = trueA * m_be + trueB;
 	return result;
 }
 
-//TODO cont
-vector<double> RefMapEstimator::load_a()
+
+vector<double> RefMapEstimator::load_a(const double be)
 {
-	vector<double> result(N_POINTS+1,0.);
+	vector<double> result(N_POINTS + 1, 0.);
 
 	string line;
-	auto file = ifstream(FILE_ROI_H);
+	auto file = ifstream(FILE_A);
+	if (!file.is_open()) {
+		throw std::exception("Could not load data/a.csv file.");
+	}
 
-	for (int i = 0; i < N_POINTS+1; i++) {
+	for (int i = 0; i < N_POINTS + 1; i++) {
 		getline(file, line);
 		vector<string> v;
 		boost::split(v, line, boost::is_any_of(","));
-		for (const auto& s : v) {
-			cout << s << " - ";
+		auto intermediary = vector<double>(N_POINTS_BE, 0.);
+		for (int j = 0; j < N_POINTS_BE; j++) {
+			from_chars(v[j].c_str(), v[j].c_str() + line.size(), intermediary[j]);
 		}
-		cout << '\n';
+		// pchip
+		pchip tmp(std::move(energy_range()), std::move(intermediary));
+		// determine parameters according to energy
+		result[i] = tmp(be);
 	}
-
 	return result;
 }
 
 
-
-vector<double> RefMapEstimator::range256()
+std::vector<double> RefMapEstimator::load_b(const double wd)
 {
-	vector<double> res(N_POINTS+1,0.);
-	for (int i = 0; i < N_POINTS+1; i++) {
-		res[i] = i * 8;
+	vector<double> result(N_POINTS + 1, 0.);
+
+	string line;
+	auto file = ifstream(FILE_B);
+	if (!file.is_open()) {
+		throw std::exception("Could not load data/b.csv file.");
+	}
+
+	for (int i = 0; i < N_POINTS + 1; i++) {
+		getline(file, line);
+		vector<string> v;
+		boost::split(v, line, boost::is_any_of(","));
+		auto intermediary = vector<double>(N_POINTS_WD, 0.);
+		for (int j = 0; j < N_POINTS_WD; j++) {
+			from_chars(v[j].c_str(), v[j].c_str() + line.size(), intermediary[j]);
+		}
+		// pchip
+		pchip tmp(std::move(wd_range()), std::move(intermediary));
+		// determine parameters according to energy
+		result[i] = tmp(wd);
+	}
+	return result;
+}
+
+
+std::vector<double> RefMapEstimator::load_k(const double wd)
+{
+	vector<double> result(N_POINTS + 1, 0.);
+
+	string line;
+	auto file = ifstream(FILE_K);
+	if (!file.is_open()) {
+		throw std::exception("Could not load data/b.csv file.");
+	}
+
+	for (int i = 0; i < N_POINTS + 1; i++) {
+		getline(file, line);
+		vector<string> v;
+		boost::split(v, line, boost::is_any_of(","));
+		auto intermediary = vector<double>(N_POINTS_WD, 0.);
+		for (int j = 0; j < N_POINTS_WD; j++) {
+			from_chars(v[j].c_str(), v[j].c_str() + line.size(), intermediary[j]);
+		}
+		// pchip
+		pchip tmp(std::move(wd_range()), std::move(intermediary));
+		// determine parameters according to energy
+		result[i] = tmp(wd);
+	}
+	return result;
+}
+
+
+vector<double> RefMapEstimator::range(double start, double stop, double step)
+{
+	if ((stop < start && step > 0) || (stop > start && step < 0) || (step == 0)) {
+		throw exception("Infinite range");
+	}
+
+	int n = lround(ceil((stop - start) / step));
+	vector<double> res(n, 0.);
+	int j = 0;
+	for (double i = start; i < stop; i += step, j++) {
+		res[j] = i;
 	}
 	return res;
 }
 
 vector<double> RefMapEstimator::energy_range()
 {
-	return vector<double>({5,10,15,20,25,30});
+	return vector<double>({ 5,10,15,20,25,30 });
 }
 
 vector<double> RefMapEstimator::wd_range()
 {
-	return vector<double>({10,12,14,16,18,20});
+	return vector<double>({ 10,12,14,16,18,20 });
 }

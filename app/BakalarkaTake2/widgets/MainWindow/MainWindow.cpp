@@ -8,13 +8,14 @@
 #include <future>
 #include <chrono>
 #include <thread>
+#include <charconv>
 
 
 using namespace std;
 using namespace cv;
 
 MainWindow::MainWindow(QWidget* parent)
-	: QMainWindow(parent), m_cfg(), m_ipt()
+	: QMainWindow(parent), m_cfg()
 {
 	setupUi(this);
 	auto sizes = splitter->sizes();
@@ -32,7 +33,7 @@ MainWindow::MainWindow(QWidget* parent)
 	// TODO remove
 	try
 	{
-		loadReflectanceMaps("C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/source/testmaps/5kV_10mm_3_u.png");
+		loadReflectanceMaps("C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/testmaps/5kV_10mm_3_u.png");
 		array<QString, 4> filenames = {
 				"C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/2022-04-11 data pro Sama konst GO/5 kV/5kV_10mm_1.png",
 				"C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/2022-04-11 data pro Sama konst GO/5 kV/5kV_10mm_2.png",
@@ -111,7 +112,9 @@ void MainWindow::loadBSEImages(std::array<QString, 4> paths)
 			paths[i] = list[i];
 		}
 	}
-
+	double wd;
+	double bc;
+	double be;
 	for (int i = 0; i < 4; i++) {
 		auto img = imread(paths[i].toStdString());
 		if (img.empty()) {
@@ -127,15 +130,36 @@ void MainWindow::loadBSEImages(std::array<QString, 4> paths)
 				if (content.starts_with("ImageStripSize=")) {
 					try {
 						int stripSize = stoi(content.substr(15));
-						img = img(cv::Range(0, img.rows - stripSize), cv::Range(0, img.cols));
+						//img = img(cv::Range(0, img.rows - stripSize), cv::Range(0, img.cols));
 					}
 					catch (std::exception& e) {
 						std::cout << e.what() << "\n";
 					}
 				}
+				else if (content.starts_with("BeamCurrent=")) {
+					from_chars(content.c_str() + 12, content.c_str() + content.size(), bc);
+				}
+				else if (content.starts_with("AcceleratorVoltage=")) {
+					from_chars(content.c_str() + 19, content.c_str() + content.size(), be);
+				}
+				else if (content.starts_with("WD=")) {
+					from_chars(content.c_str() + 3, content.c_str() + content.size(), wd);
+				}
 			}
 		}
+		else {
+			QMessageBox::critical(this, "Missing hdr file", "Image \"" + paths[i] + "\" does not have .hdr file associated with it.");
+			return;
+		}
 		m_origImgs[i] = img;
+	}
+
+	try {
+		m_estimator.reset(be/1000, wd*1000, bc*1e9);
+	}
+	catch (std::exception& e) {
+		QMessageBox::critical(this, "Error", e.what());
+		return;
 	}
 
 	processBSEImages();
@@ -271,15 +295,15 @@ void MainWindow::onSelected(double x, double y)
 	int d = m_grayImgs[3].at<uint8_t>(trueY, trueX);
 	reflectanceMap->colorPixels(a, b, c, d);
 
-	auto el1 = Superellipse(m_ipt.getA(a), m_ipt.getB(a), m_ipt.getC(a), 0, m_ipt.getK(a));
+	auto el1 = Superellipse(m_estimator.getA(a), m_estimator.getB(a), m_estimator.getC(a), 0, m_estimator.getK(a));
 	reflectanceMap->drawSuperellipse(el1, Segments::Q1);
-	auto el2 = Superellipse(m_ipt.getA(b), m_ipt.getB(b), m_ipt.getC(b), 0, m_ipt.getK(b));
+	auto el2 = Superellipse(m_estimator.getA(b), m_estimator.getB(b), m_estimator.getC(b), 0, m_estimator.getK(b));
 	el2.changeSegment(Segments::Q2);
 	reflectanceMap->drawSuperellipse(el2, Segments::Q2);
-	auto el3 = Superellipse(m_ipt.getA(c), m_ipt.getB(c), m_ipt.getC(c), 0, m_ipt.getK(c));
+	auto el3 = Superellipse(m_estimator.getA(c), m_estimator.getB(c), m_estimator.getC(c), 0, m_estimator.getK(c));
 	el3.changeSegment(Segments::Q3);
 	reflectanceMap->drawSuperellipse(el3, Segments::Q3);
-	auto el4 = Superellipse(m_ipt.getA(d), m_ipt.getB(d), m_ipt.getC(d), 0, m_ipt.getK(d));
+	auto el4 = Superellipse(m_estimator.getA(d), m_estimator.getB(d), m_estimator.getC(d), 0, m_estimator.getK(d));
 	el4.changeSegment(Segments::Q4);
 	reflectanceMap->drawSuperellipse(el4, Segments::Q4);
 
@@ -587,9 +611,9 @@ std::unique_ptr<std::array<std::array<std::vector<QPointF>, 256>, 256>> MainWind
 	auto res = make_unique<std::array<std::array<std::vector<QPointF>, 256>, 256>>();
 	for (int i = 0; i < 256; i++) {
 		for (int j = 0; j < 256; j++) {
-			auto el1 = Superellipse(m_ipt.getA(i), m_ipt.getB(i), m_ipt.getC(i), 0, m_ipt.getK(i));
+			auto el1 = Superellipse(m_estimator.getA(i), m_estimator.getB(i), m_estimator.getC(i), 0, m_estimator.getK(i));
 			el1.changeSegment(seg1);
-			auto el2 = Superellipse(m_ipt.getA(j), m_ipt.getB(j), m_ipt.getC(j), 0, m_ipt.getK(j));
+			auto el2 = Superellipse(m_estimator.getA(j), m_estimator.getB(j), m_estimator.getC(j), 0, m_estimator.getK(j));
 			el2.changeSegment(seg2);
 			res->at(i)[j] = el1.findPOIs(el2);
 		}
