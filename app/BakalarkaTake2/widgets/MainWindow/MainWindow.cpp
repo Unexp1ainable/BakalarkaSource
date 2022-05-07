@@ -130,7 +130,7 @@ void MainWindow::loadBSEImages(std::array<QString, 4> paths)
 				if (content.starts_with("ImageStripSize=")) {
 					try {
 						int stripSize = stoi(content.substr(15));
-						//img = img(cv::Range(0, img.rows - stripSize), cv::Range(0, img.cols));
+						img = img(cv::Range(0, img.rows - stripSize), cv::Range(0, img.cols));
 					}
 					catch (std::exception& e) {
 						std::cout << e.what() << "\n";
