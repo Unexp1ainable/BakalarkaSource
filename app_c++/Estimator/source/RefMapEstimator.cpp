@@ -20,17 +20,18 @@ RefMapEstimator::RefMapEstimator(const double energy, const double wd, const dou
 	// compensate for a different current
 	m_roi_l	/= BASE_BC/current;
 	m_roi_h /= BASE_BC/current;
-
+	m_roi_diff = m_roi_h - m_roi_l;
+	cout << "l: " <<  m_roi_l << " ,h: " << m_roi_h << "\n";
 }
 
 double RefMapEstimator::getA(int val)
 {
-	return m_a(val);
+	return std::clamp(m_a(std::clamp((val - m_roi_l) * 256 / m_roi_diff, 0., 256.)), 0.01, 200.);
 }
 
 double RefMapEstimator::getB(int val)
 {
-	return m_b(val);
+	return std::clamp(m_b(std::clamp((val - m_roi_l) * 256 / m_roi_diff, 0., 256.)), 0.01, 200.);
 }
 
 double RefMapEstimator::getC(int val)
@@ -40,7 +41,7 @@ double RefMapEstimator::getC(int val)
 
 double RefMapEstimator::getK(int val)
 {
-	return m_k(val);
+	return std::clamp(m_k(std::clamp((val - m_roi_l) * 256 / m_roi_diff, 0., 256.)), 0.01, 200.);
 }
 
 double RefMapEstimator::load_roi_l()

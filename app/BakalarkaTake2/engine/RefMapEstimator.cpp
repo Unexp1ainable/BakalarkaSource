@@ -38,8 +38,8 @@ void RefMapEstimator::reset(const double energy, const double wd, const double c
 	m_roi_h = load_roi_h();
 
 	// compensate for a different current
-	m_roi_l /= BASE_BC / current;
-	m_roi_h /= BASE_BC / current;
+	m_roi_l /= BASE_BC / (current);
+	m_roi_h /= BASE_BC / (current);
 	m_roi_diff = m_roi_h - m_roi_l;
 }
 

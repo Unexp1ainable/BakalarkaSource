@@ -6,6 +6,7 @@
 #include <io.h>
 #include <string.h>
 #include <windows.h>
+#include <string>
 
 #include "DGP_Defines.h"
 #include "DGPObList.h"
@@ -84,42 +85,10 @@ int _tmain(int argc, _TCHAR* argv[])
 	printf("File input time: %ld\n", t2-t1);
 #endif
 
-	//step 2: specify solver type
-	printf("\n-------------------------------------------------------\n");
-	
-	printf("Solver Types:\n%d: %s%d: %s", DIRECT_SOLVER, "Direct Solver\n", 
-		GAUSS_SEIDEL_CPU, "Gauss-Seidel CPU\n");
-	DGP_CHAR inputStr[200]; SOLVER_TYPE solve_type;
-	printf("\nPlease select solver type: ");
-	scanf("%s",inputStr);	sscanf(inputStr, "%d", &solve_type);
-	if((solve_type<=NONE_TYPE)||(solve_type>=TOTAL_TYPE)){
-		printf("Solver type error, please check!\n");
-		delete recon; recon = NULL;
-		return 0;
-	}
-
-	//step 3: specify maximum iteration steps
-	printf("\n-------------------------------------------------------\n");
-	
-	printf("Please specify max iteration steps: ");
+	SOLVER_TYPE solve_type = DIRECT_SOLVER;
 	DGP_INT maxStep = 5;
-	scanf("%s",inputStr);	sscanf(inputStr, "%d", &maxStep);
 
-	//step 4: do reconstruction
-	printf("\n-------------------------------------------------------\n");
-	printf("Selected solver type: ");
-	switch(solve_type){
-		case DIRECT_SOLVER:{
-			printf("Direct Solver\n");
-						   }break;
-		case GAUSS_SEIDEL_CPU:{
-			printf("Gauss-Seidel CPU\n");
-							  }break;
-		case GAUSS_SEIDEL_GPU:{
-			printf("Gauss-Seidel GPU\n");
-							  }break;
-	}
-	printf("Begin reconstruction...\n");
+	printf("Begin reconstruction... 5 steps\n");
 #ifdef OUTPUT_INFO
 	t2 = clock();
 #endif
@@ -130,15 +99,10 @@ int _tmain(int argc, _TCHAR* argv[])
 	printf("Reconstruction time: %ld\n", t3-t2);
 #endif
 	//step 5: output result
-	printf("\n-------------------------------------------------------");
-	printf("\nBegin output...");
-	printf("\nPlease specify output file name: ");
-	scanf("%s", name);
-	
-	printf("Export with surface, Y/N? ");
-	scanf("%s", surfFlag);
-	bool withSurface = false;
-	if((_stricmp(surfFlag, "Y")==0)||(_stricmp(surfFlag, "y")==0)) withSurface = true;
+	std::string objname = name;
+	objname.replace(objname.end()-3,objname.end(),"obj");
+	strcpy(name, objname.c_str());
+	bool withSurface = true;
 	
 	strcpy(filename, dir);
 	strcat(filename, "Result\\");

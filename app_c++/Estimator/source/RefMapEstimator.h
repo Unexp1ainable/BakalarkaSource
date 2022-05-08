@@ -9,6 +9,7 @@ using boost::math::interpolators::pchip;
 class RefMapEstimator {
 public:
 	RefMapEstimator(const double energy, const double wd, const double current);
+	RefMapEstimator() : m_a({ 0,1,2,3 }, { 0,0,0,0 }), m_b({ 0,1,2,3 }, { 0,0,0,0 }), m_k({ 0,1,2,3 }, { 0,0,0,0 }) {}
 
 	double getA(int val);
 	double getB(int val);
@@ -27,17 +28,18 @@ protected:
 	static std::vector<double> wd_range();
 
 
-	const double m_be;
-	const double m_wd;
-	const double m_bc;
+	double m_be;
+	double m_wd;
+	double m_bc;
 
 	double m_roi_l;
 	double m_roi_h;
+	double m_roi_diff;
 
 	// --------- pchips ---------
-	const pchip<std::vector<double>> m_a;
-	const pchip<std::vector<double>> m_b;
-	const pchip<std::vector<double>> m_k;
+	pchip<std::vector<double>> m_a;
+	pchip<std::vector<double>> m_b;
+	pchip<std::vector<double>> m_k;
 
 
 	// -------- FILES --------

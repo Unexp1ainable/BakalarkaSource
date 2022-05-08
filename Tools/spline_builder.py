@@ -1,5 +1,5 @@
 from sys import stderr
-from matplotlib.pyplot import yscale
+import matplotlib.pyplot as plt
 import numpy as np
 import cv2 as cv
 from scipy.interpolate import PchipInterpolator
@@ -119,6 +119,12 @@ def make_template(args):
                 data[x] = y
             except:
                 pass
+
+    plt.title("Fitted parameter")
+    plt.xlabel("Pixel value")
+    plt.ylabel("Normalized parameter")
+    plt.plot(data, label="a")
+    plt.show()
 
     YMAX = 1
     if data.max() > 1:

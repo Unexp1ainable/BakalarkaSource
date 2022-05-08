@@ -27,6 +27,7 @@ MainWindow::MainWindow(QWidget* parent)
 	connect(actionLoad_BSE_images, &QAction::triggered, this, &MainWindow::onLoadBSEImages);
 	connect(actionShow_normal_image, &QAction::triggered, this, &MainWindow::onShowNormalImage);
 	connect(actionPort_angle, &QAction::triggered, this, &MainWindow::onDetectorSettingsInvoked);
+	connect(actionUse_default_material, &QAction::triggered, this, &MainWindow::onUseDefaultMaterial);
 	connect(imageManager->selector(), &ImageLabel::selected, this, &MainWindow::onSelected);
 	connect(imageManager->segmentManager(), &SegmentManager::swapped, this, &MainWindow::onSwapped);
 
@@ -116,6 +117,7 @@ void MainWindow::loadBSEImages(std::array<QString, 4> paths)
 	double bc;
 	double be;
 	for (int i = 0; i < 4; i++) {
+		int place = i;
 		auto img = imread(paths[i].toStdString());
 		if (img.empty()) {
 			QMessageBox::critical(this, "Unable to open", "Image \"" + paths[i] + "\" could not be loaded.");
@@ -145,17 +147,33 @@ void MainWindow::loadBSEImages(std::array<QString, 4> paths)
 				else if (content.starts_with("WD=")) {
 					from_chars(content.c_str() + 3, content.c_str() + content.size(), wd);
 				}
+				else if (content.starts_with("Detector=BSE Q")) {
+					from_chars(content.c_str() + 14, content.c_str() + content.size(), place);
+				}
 			}
 		}
 		else {
 			QMessageBox::critical(this, "Missing hdr file", "Image \"" + paths[i] + "\" does not have .hdr file associated with it.");
 			return;
 		}
-		m_origImgs[i] = img;
+		place--;
+		if (place < 0 || place > 3)
+		{
+			place = i;
+		}
+
+		// downscale if too big
+		int m = max(img.cols, img.rows);
+		if (m > MAX_RES) {
+			double coeff = MAX_RES / (double)m;
+			cv::resize(img, img, cv::Size(img.cols * coeff, img.rows * coeff));
+		}
+
+		m_origImgs[place] = img;
 	}
 
 	try {
-		m_estimator.reset(be/1000, wd*1000, bc*1e9);
+		m_estimator.reset(be / 1000, wd * 1000, bc * 1e9);
 	}
 	catch (std::exception& e) {
 		QMessageBox::critical(this, "Error", e.what());
@@ -185,6 +203,11 @@ void MainWindow::processBSEImages()
 
 void MainWindow::showNormalImage()
 {
+	auto filename = QFileDialog::getSaveFileName(this, "Normal file location", "", tr("TXT (*.txt)"));
+	if (filename == "") {
+		return;
+	}
+
 	QProgressDialog progress("Precalculating intersections..", "Abort", 0, 256 * 6, this);
 	progress.setWindowModality(Qt::WindowModal);
 	progress.setValue(0);
@@ -234,7 +257,7 @@ void MainWindow::showNormalImage()
 	QProgressDialog progress2("Calculating normals...", "Abort", 0, m_grayImgs[0].cols, this);
 	progress2.setWindowModality(Qt::WindowModal);
 
-	auto file = std::ofstream("stuff");
+	auto file = std::ofstream(filename.toStdString());
 	file << m_grayImgs[0].cols << " " << m_grayImgs[0].rows << "\n";
 
 	cv::Mat finImg = cv::Mat(m_grayImgs[0].size(), CV_8UC3);
@@ -269,6 +292,7 @@ void MainWindow::showNormalImage()
 			return;
 	}
 	progress2.cancel();
+	file.close();
 
 	cv::imwrite("final.png", finImg);
 	cv::imshow("Normal map", finImg);
@@ -281,6 +305,11 @@ void MainWindow::onDetectorSettingsChanged()
 	m_cfg.save();
 	processReflectanceMaps();
 	processBSEImages();
+}
+
+void MainWindow::onUseDefaultMaterial()
+{
+	m_estimator.reset(5, 10, 7);
 }
 
 
@@ -355,244 +384,216 @@ QPointF MainWindow::evaluatePointsGraphic(std::vector<QPointF>& npts12, std::vec
 	pts.insert(pts.end(), npts24.begin(), npts24.end());
 	pts.insert(pts.end(), npts34.begin(), npts34.end());
 
-	// check if at least one POI was found
-	if (pts.size() == 0) {
-		return QPointF(0., 0.);
+
+	for (const auto& pt : pts) {
+		reflectanceMap->point(pt.x() + 0.5, -pt.y());
 	}
+
+	std::array<std::vector<QPointF>*, 6> grouped = { &npts12, &npts13, &npts14, &npts23, &npts24, &npts34 };
+	std::array<std::vector<QPointF*>, 6> groupedPtr{};
+	int i = 0;
+	for (const auto& group : grouped) {
+		vector<QPointF*> tmp{ group->size(),nullptr };
+		if (group->size() == 0) {
+			tmp.push_back(nullptr);
+		}
+		else {
+			std::transform(group->begin(), group->end(), tmp.begin(), [](auto& item) {return &item; });
+		}
+		groupedPtr[i] = tmp;
+		i++;
+	}
+
+	double minDeviation = 99999999999999999999.;
+	int minGroup = 0;
+	const QPointF* curr[6]{};
+	const QPointF* bestPoints[6]{};
+
+
+	for (const auto& g0 : groupedPtr[0]) {
+		for (const auto& g1 : groupedPtr[1]) {
+			for (const auto& g2 : groupedPtr[2]) {
+				for (const auto& g3 : groupedPtr[3]) {
+					for (const auto& g4 : groupedPtr[4]) {
+						for (const auto& g5 : groupedPtr[5]) {
+							curr[0] = g0;
+							curr[1] = g1;
+							curr[2] = g2;
+							curr[3] = g3;
+							curr[4] = g4;
+							curr[5] = g5;
+
+
+							// calculate average
+							double sumptx = 0.;
+							double sumpty = 0.;
+							int n = 0;
+							for (int point = 0; point < 6; point++) {
+								if (!curr[point])
+									continue;
+								sumptx += curr[point]->x();
+								sumpty += curr[point]->y();
+								n++;
+							}
+							sumptx /= n;
+							sumpty /= n;
+
+							double deviation = 0.;
+							// calculate deviation
+							for (int point = 0; point < 6; point++) {
+								if (!curr[point])
+									continue;
+								double x = curr[point]->x();
+								double y = curr[point]->y();
+								deviation += (sumptx - x) * (sumptx - x) + (sumpty - y) * (sumpty - y);
+							}
+
+							// determine if this is the best group so far
+							if (deviation < minDeviation) {
+								minDeviation = deviation;
+								memcpy(bestPoints, curr, 6 * sizeof(QPointF*));
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+
 
 	double sumptx = 0.;
 	double sumpty = 0.;
-	for (const auto& pt : pts) {
-		reflectanceMap->point(pt.x() + 0.5, -pt.y());
-		sumptx += pt.x();
-		sumpty += pt.y();
-	}
-	sumptx /= pts.size();
-	sumpty /= pts.size();
-
-	std::array<std::vector<QPointF>*, 6> grouped = { &npts12, &npts13, &npts14, &npts23, &npts24, &npts34 };
-	std::array<bool, 6> flags;
-	flags.fill(false);
-	std::array<QPointF, 6> finals{};
-
-	// pre-save solitary points
-	for (int i = 0; i < 6; i++) {
-		if (grouped[i]->size() == 0) {
-			flags[i] = true;
-		}
-		else if (grouped[i]->size() == 1) {
-			finals[i] = (*grouped[i])[0];
-			flags[i] = true;
-		}
-	}
-
-	// remove too distant points
-	for (int i = 0; i < 6; i++) {
-		if (flags[i])
-			continue;
-		double lowest = 1.;
-		for (const auto& [x, y] : *grouped[i]) {
-			double tx = x - sumptx;
-			double ty = y - sumpty;
-			double res = tx * tx + ty * ty;
-			if (lowest > res) {
-				lowest = res;
-			}
-		}
-		lowest = sqrt(lowest);
-		for (int j = 0; j < (*grouped[i]).size(); j++) {
-			if (sqrt(pow((*grouped[i])[j].x() - sumptx, 2) + pow((*grouped[i])[j].y() - sumpty, 2)) - lowest > 0.1) {
-				grouped[i]->erase(grouped[i]->begin() + j);
-			}
-		}
-
-		// check if solitary
-		if (grouped[i]->size() == 1) {
-			finals[i] = (*grouped[i])[0];
-			flags[i] = true;
-		}
-	}
-
-	// recalculate midpoint
-	sumptx = 0.;
-	sumpty = 0.;
 	int n = 0;
-	for (const auto group : grouped) {
-		for (const auto& [x, y] : *group) {
-			sumptx += x;
-			sumpty += y;
-			n++;
-		}
-	}
-	sumptx /= n;
-	sumpty /= n;
-
-	// final classification
-	for (int i = 0; i < 6; i++) {
-		if (flags[i])
+	for (int point = 0; point < 6; point++) {
+		if (!bestPoints[point])
 			continue;
-
-		double lowest = 1.;
-		QPointF lowestPt;
-		for (const auto& pt : *grouped[i]) {
-			double tx = pt.x() - sumptx;
-			double ty = pt.y() - sumpty;
-			double res = tx * tx + ty * ty;
-			if (lowest > res) {
-				lowest = res;
-				lowestPt = pt;
-			}
-		}
-		finals[i] = lowestPt;
-
-		// TODO close points handling
-	}
-	sumptx = 0.;
-	sumpty = 0.;
-	for (const auto& [x, y] : finals) {
-		reflectanceMap->point(x + 0.5, -y, Qt::cyan);
+		double x = bestPoints[point]->x();
+		double y = bestPoints[point]->y();
 		sumptx += x;
 		sumpty += y;
+		reflectanceMap->point(x + 0.5, -y, Qt::cyan);
+		n++;
 	}
-	sumptx /= 6;
-	sumpty /= 6;
+
+	if (n != 0)
+	{
+		sumptx /= n;
+		sumpty /= n;
+	}
 
 	reflectanceMap->point(sumptx + 0.5, -sumpty, Qt::white);
 
-	double rangle = -m_cfg.portAngle() * (CV_PI / 180);
-
-	double s = sin(rangle);
-	double c = cos(rangle);
 
 	// rotate point
+	double rangle = -m_cfg.portAngle() * (CV_PI / 180);
+	double s = std::sin(rangle);
+	double c = std::cos(rangle);
 	double ty = sumpty + 0.5;
 	double cx = sumptx * c - ty * s;
 	double cy = sumptx * s + ty * c;
-
 	cy -= 0.5;
-
 	reflectanceMap->point(cx + 0.5, -cy, Qt::darkGreen);
 
-	return QPointF(sumptx, sumpty);
+	return QPointF(cx, cy);
 }
+
 
 QPointF MainWindow::evaluatePoints(std::vector<QPointF>& npts12, std::vector<QPointF>& npts13, std::vector<QPointF>& npts14, std::vector<QPointF>& npts23, std::vector<QPointF>& npts24, std::vector<QPointF>& npts34)
 {
+
 	std::array<std::vector<QPointF>*, 6> grouped = { &npts12, &npts13, &npts14, &npts23, &npts24, &npts34 };
-	int nEmpty = 0;
-	std::array<bool, 6> flags;
-	flags.fill(false);
-	std::array<QPointF, 6> finals;
-	finals.fill(QPointF(0., 0.));
-
-
-	// check if at least one POI was found
-	for (int i = 0; i < 6; i++) {
-		if ((*grouped[i]).size() == 0) {
-			flags[i] = true;
+	std::array<std::vector<QPointF*>, 6> groupedPtr{};
+	int i = 0;
+	for (const auto& group : grouped) {
+		vector<QPointF*> tmp{ group->size(),nullptr };
+		if (group->size() == 0) {
+			tmp.push_back(nullptr);
 		}
 		else {
-			nEmpty++;
+			std::transform(group->begin(), group->end(), tmp.begin(), [](auto& item) {return &item; });
+		}
+		groupedPtr[i] = tmp;
+		i++;
+	}
+
+	double minDeviation = 99999999999999999999.;
+	int minGroup = 0;
+	const QPointF* curr[6]{};
+	const QPointF* bestPoints[6]{};
+
+
+	for (const auto& g0 : groupedPtr[0]) {
+		for (const auto& g1 : groupedPtr[1]) {
+			for (const auto& g2 : groupedPtr[2]) {
+				for (const auto& g3 : groupedPtr[3]) {
+					for (const auto& g4 : groupedPtr[4]) {
+						for (const auto& g5 : groupedPtr[5]) {
+							curr[0] = g0;
+							curr[1] = g1;
+							curr[2] = g2;
+							curr[3] = g3;
+							curr[4] = g4;
+							curr[5] = g5;
+
+
+							// calculate average
+							double sumptx = 0.;
+							double sumpty = 0.;
+							int n = 0;
+							for (int point = 0; point < 6; point++) {
+								if (!curr[point])
+									continue;
+								sumptx += curr[point]->x();
+								sumpty += curr[point]->y();
+								n++;
+							}
+							sumptx /= n;
+							sumpty /= n;
+
+							double deviation = 0.;
+							// calculate deviation
+							for (int point = 0; point < 6; point++) {
+								if (!curr[point])
+									continue;
+								double x = curr[point]->x();
+								double y = curr[point]->y();
+								deviation += (sumptx - x) * (sumptx - x) + (sumpty - y) * (sumpty - y);
+							}
+
+							// determine if this is the best group so far
+							if (deviation < minDeviation) {
+								minDeviation = deviation;
+								memcpy(bestPoints, curr, 6 * sizeof(QPointF*));
+							}
+						}
+					}
+				}
+			}
 		}
 	}
-	if (nEmpty == 0) {
-		return QPointF(0., 0.);
-	}
+
+
 
 	double sumptx = 0.;
 	double sumpty = 0.;
 	int n = 0;
-	for (const auto group : grouped) {
-		for (const auto& [x, y] : *group) {
-			sumptx += x;
-			sumpty += y;
-			n++;
-		}
-	}
-	sumptx /= n;
-	sumpty /= n;
-
-	// pre-save solitary points
-	for (int i = 0; i < 6; i++) {
-		if (grouped[i]->size() == 0) {
-			flags[i] = true;
-		}
-		else if (grouped[i]->size() == 1) {
-			finals[i] = (*grouped[i])[0];
-			flags[i] = true;
-		}
-	}
-
-	// remove too distant points
-	for (int i = 0; i < 6; i++) {
-		if (flags[i])
+	for (int point = 0; point < 6; point++) {
+		if (!bestPoints[point])
 			continue;
-		double lowest = 1.;
-		for (const auto& [x, y] : *grouped[i]) {
-			double tx = x - sumptx;
-			double ty = y - sumpty;
-			double res = tx * tx + ty * ty;
-			if (lowest > res) {
-				lowest = res;
-			}
-		}
-		lowest = sqrt(lowest);
-		for (int j = 0; j < (*grouped[i]).size(); j++) {
-			if (sqrt(pow((*grouped[i])[j].x() - sumptx, 2) + pow((*grouped[i])[j].y() - sumpty, 2)) - lowest > 0.1) {
-				grouped[i]->erase(grouped[i]->begin() + j);
-			}
-		}
-
-		// check if solitary
-		if (grouped[i]->size() == 1) {
-			finals[i] = (*grouped[i])[0];
-			flags[i] = true;
-		}
-	}
-
-	// recalculate midpoint
-	sumptx = 0.;
-	sumpty = 0.;
-	n = 0;
-	for (const auto group : grouped) {
-		for (const auto& [x, y] : *group) {
-			sumptx += x;
-			sumpty += y;
-			n++;
-		}
-	}
-	sumptx /= n;
-	sumpty /= n;
-
-	// final classification
-	for (int i = 0; i < 6; i++) {
-		if (flags[i])
-			continue;
-
-		double lowest = 1.;
-		QPointF lowestPt;
-		for (const auto& pt : *grouped[i]) {
-			double tx = pt.x() - sumptx;
-			double ty = pt.y() - sumpty;
-			double res = tx * tx + ty * ty;
-			if (lowest > res) {
-				lowest = res;
-				lowestPt = pt;
-			}
-		}
-		finals[i] = lowestPt;
-
-		// TODO close points handling
-	}
-
-	sumptx = 0.;
-	sumpty = 0.;
-	for (const auto& [x, y] : finals) {
+		double x = bestPoints[point]->x();
+		double y = bestPoints[point]->y();
 		sumptx += x;
 		sumpty += y;
+		n++;
 	}
-	sumptx /= nEmpty;
-	sumpty /= nEmpty;
+	if (n != 0)
+	{
+		sumptx /= n;
+		sumpty /= n;
+	}
+
+
 
 	// rotate point
 	double rangle = -m_cfg.portAngle() * (CV_PI / 180);
@@ -624,3 +625,5 @@ std::unique_ptr<std::array<std::array<std::vector<QPointF>, 256>, 256>> MainWind
 	}
 	return res;
 }
+
+
