@@ -104,7 +104,7 @@ void MainWindow::processReflectanceMaps()
 void MainWindow::loadBSEImages(std::array<QString, 4> paths)
 {
 	if (paths[0] == "") {
-		auto list = QFileDialog::getOpenFileNames();
+		auto list = QFileDialog::getOpenFileNames(this,"Select 4 BSE images", "", "Images (*.png *.tif *.tiff)");
 		if (list.size() != 4) {
 			QMessageBox::critical(this, "Unable to open", "Please select 4 images.");
 			return;
