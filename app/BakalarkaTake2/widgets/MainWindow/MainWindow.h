@@ -24,8 +24,6 @@ public:
 	~MainWindow();
 
 protected:
-	void loadReflectanceMaps(QString filename = "");
-	void processReflectanceMaps();
 	void loadBSEImages(std::array<QString, 4> paths = {""});
 	void processBSEImages();
 	void showNormalImage();
@@ -52,7 +50,6 @@ protected:
 	static constexpr int MAX_RES = 512;
 
 protected slots:
-	void onLoadReflectanceMaps(bool checked) { loadReflectanceMaps(); };
 	void onLoadBSEImages(bool checked) { loadBSEImages(); };
 	void onShowNormalImage(bool checked) { showNormalImage(); };
 	void onDetectorSettingsInvoked(bool checked);

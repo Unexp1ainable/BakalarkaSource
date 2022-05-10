@@ -2,9 +2,9 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="120.16163mm"
-   height="120.16163mm"
-   viewBox="0 0 120.16163 120.16163"
+   width="119.46163mm"
+   height="119.46163mm"
+   viewBox="0 0 119.46163 119.46163"
    version="1.1"
    id="svg5"
    inkscape:version="1.1.2 (b8e25be833, 2022-02-05)"
@@ -31,9 +31,9 @@
      fit-margin-left="0"
      fit-margin-right="0"
      fit-margin-bottom="0"
-     inkscape:zoom="1"
-     inkscape:cx="290"
-     inkscape:cy="424.5"
+     inkscape:zoom="2"
+     inkscape:cx="250.5"
+     inkscape:cy="225.25"
      inkscape:window-width="2560"
      inkscape:window-height="1506"
      inkscape:window-x="-11"
@@ -70,9 +70,9 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-45.596774,-47.303538)">
+     transform="translate(-45.946774,-47.653538)">
     <circle
-       style="fill:url(#radialGradient3487);fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:0.7;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;paint-order:stroke fill markers"
+       style="fill:url(#radialGradient3487);fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.7;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;paint-order:stroke fill markers"
        id="path846"
        cx="105.67759"
        cy="107.38435"

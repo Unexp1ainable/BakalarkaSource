@@ -54,7 +54,6 @@
      <string>Load</string>
     </property>
     <addaction name="actionLoad_BSE_images"/>
-    <addaction name="actionLoad_reflectance_maps"/>
    </widget>
    <widget class="QMenu" name="menuShow">
     <property name="title">

@@ -21,17 +21,13 @@ public:
 	ReflectanceMap(QWidget *parent = nullptr);
 	~ReflectanceMap();
 
-	void setMap(std::array<cv::Mat, 4>& maps, std::array<cv::Mat, 4>& grayMaps);
-	void colorPixels(unsigned char a, unsigned char b, unsigned char c, unsigned char d);
 	void point(double x, double y, QColor = Qt::magenta);
-	void setPQ(double p, double q);
 	void drawSuperellipse(Superellipse el, Segments seg);
+	void reset();
 
 protected:
 	std::array<ImageLabel*, 4> m_labels;
-
 	std::array<QImage, 4> m_maps;
-	std::array<QImage, 4> m_grayMaps;
 	QImage m_sumMap;
 
 private:

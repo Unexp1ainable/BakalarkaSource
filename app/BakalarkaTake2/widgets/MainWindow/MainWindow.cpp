@@ -23,7 +23,6 @@ MainWindow::MainWindow(QWidget* parent)
 	sizes[1] = 100;
 	splitter->setSizes(sizes);
 
-	connect(actionLoad_reflectance_maps, &QAction::triggered, this, &MainWindow::onLoadReflectanceMaps);
 	connect(actionLoad_BSE_images, &QAction::triggered, this, &MainWindow::onLoadBSEImages);
 	connect(actionShow_normal_image, &QAction::triggered, this, &MainWindow::onShowNormalImage);
 	connect(actionPort_angle, &QAction::triggered, this, &MainWindow::onDetectorSettingsInvoked);
@@ -34,7 +33,6 @@ MainWindow::MainWindow(QWidget* parent)
 	// TODO remove
 	try
 	{
-		loadReflectanceMaps("C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/testmapss/5kV_10mm_3_u.png");
 		array<QString, 4> filenames = {
 				"C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/2022-04-11 data pro Sama konst GO/5 kV/5kV_10mm_1.png",
 				"C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/2022-04-11 data pro Sama konst GO/5 kV/5kV_10mm_2.png",
@@ -55,50 +53,6 @@ MainWindow::~MainWindow()
 	if (m_angleDialog) {
 		delete m_angleDialog;
 	}
-}
-
-void MainWindow::loadReflectanceMaps(QString filename) {
-	if (filename == "") {
-		filename = QFileDialog::getOpenFileName();
-	}
-
-	if (filename.isEmpty()) {
-		return;
-	}
-
-	// prepare BGR images
-	m_origMaps[0] = imread(filename.toStdString());
-	if (m_origMaps[0].empty()) {
-		QMessageBox::critical(this, "Unable to open", "Reflectance map could not be loaded.");
-		return;
-	}
-
-	for (int i = 1; i < 4; i++) {
-		cv::rotate(m_origMaps[i - 1], m_origMaps[i], ROTATE_90_COUNTERCLOCKWISE);
-	}
-
-	processReflectanceMaps();
-}
-
-void MainWindow::processReflectanceMaps()
-{
-	for (int i = 0; i < 4; i++) {
-		//rotate images
-		m_origMaps[i].copyTo(m_maps[i]);
-		cv::Point2f pc(m_maps[i].cols / 2., m_maps[i].rows / 2.);
-		cv::Mat r = cv::getRotationMatrix2D(pc, m_cfg.portAngle(), 1.0);
-
-		cv::warpAffine(m_maps[i], m_maps[i], r, m_maps[i].size());
-		// apply brightness contrast
-		//cv::convertScaleAbs(m_maps[i], m_maps[i], m_cfg.alpha(i), m_cfg.beta(i));
-	}
-
-	// prepare grayscale images
-	for (int i = 0; i < 4; i++) {
-		cvtColor(m_maps[i], m_grayMaps[i], COLOR_BGR2GRAY);
-	}
-
-	reflectanceMap->setMap(m_maps, m_grayMaps);
 }
 
 void MainWindow::loadBSEImages(std::array<QString, 4> paths)
@@ -303,7 +257,6 @@ void MainWindow::showNormalImage()
 void MainWindow::onDetectorSettingsChanged()
 {
 	m_cfg.save();
-	processReflectanceMaps();
 	processBSEImages();
 }
 
@@ -315,6 +268,7 @@ void MainWindow::onUseDefaultMaterial()
 
 void MainWindow::onSelected(double x, double y)
 {
+	reflectanceMap->reset();
 	int trueX = m_imgs[0].cols * x;
 	int trueY = m_imgs[0].rows * y;
 	cout << trueX << ", " << trueY << endl;
@@ -322,7 +276,6 @@ void MainWindow::onSelected(double x, double y)
 	int b = m_grayImgs[1].at<uint8_t>(trueY, trueX);
 	int c = m_grayImgs[2].at<uint8_t>(trueY, trueX);
 	int d = m_grayImgs[3].at<uint8_t>(trueY, trueX);
-	reflectanceMap->colorPixels(a, b, c, d);
 
 	auto el1 = Superellipse(m_estimator.getA(a), m_estimator.getB(a), m_estimator.getC(a), 0, m_estimator.getK(a));
 	reflectanceMap->drawSuperellipse(el1, Segments::Q1);

@@ -1,5 +1,5 @@
 <RCC>
     <qresource prefix="/maps">
-        <file>map.svg</file>
+        <file>svg/map.svg</file>
     </qresource>
 </RCC>
