@@ -1,5 +1,11 @@
 #pragma once
-
+/*****************************************************************//**
+ * \file   Configuration.h
+ * \brief  Configuration context manager. Automatically manages persistent configuration in an xml file.
+ * 
+ * \author Samuel Repka
+ * \date   May 2022
+ *********************************************************************/
 #include <map>
 
 #include <QDomDocument>

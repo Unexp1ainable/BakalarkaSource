@@ -1,5 +1,11 @@
 #pragma once
-
+/*****************************************************************//**
+ * \file   ReflectanceMap.h
+ * \brief  Widget visualising calculation of the normals.
+ * 
+ * \author Samuel Repka
+ * \date   May 2022
+ *********************************************************************/
 #include <QWidget>
 #include <QImage>
 #include <QColor>
@@ -21,8 +27,18 @@ public:
 	ReflectanceMap(QWidget *parent = nullptr);
 	~ReflectanceMap();
 
+	/**
+	 * Draw a point. Parameters are normalised.
+	 */
 	void point(double x, double y, QColor = Qt::magenta);
+	/**
+	 * Draw superellipse to the specified segment
+	 */
 	void drawSuperellipse(Superellipse el, Segments seg);
+
+	/**
+	 * Clear everything drawn.
+	 */
 	void reset();
 
 protected:

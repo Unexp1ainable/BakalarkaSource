@@ -1,5 +1,11 @@
 #pragma once
-
+/*****************************************************************//**
+ * \file   RefMapEstimator.h
+ * \brief  Estimator of the superellipse parameters, according to current, energy and working distance
+ * 
+ * \author Samuel Repka
+ * \date   May 2022
+ *********************************************************************/
 #include <boost/math/interpolators/pchip.hpp>
 #include <vector>
 
@@ -11,8 +17,12 @@ public:
 	RefMapEstimator(const double energy, const double wd, const double current);
 	RefMapEstimator() : m_a({ 0,1,2,3 }, { 0,0,0,0 }), m_b({ 0,1,2,3 }, { 0,0,0,0 }), m_k({ 0,1,2,3 }, { 0,0,0,0 }) {}
 
+	/**
+	 * Recalculate PCHIPs according to new values.
+	 */
 	void reset(const double energy, const double wd, const double current);
 
+	// get parameters for a given value
 	double getA(int val);
 	double getB(int val);
 	double getC(int val);
@@ -25,6 +35,7 @@ protected:
 	static std::vector<double> load_b(const double wd);
 	static std::vector<double> load_k(const double wd);
 
+	// generators of ranges
 	static std::vector<double> range(double start, double stop, double step=1.);
 	static std::vector<double> energy_range();
 	static std::vector<double> wd_range();
@@ -44,7 +55,7 @@ protected:
 	pchip<std::vector<double>> m_k;
 
 
-	// -------- FILES --------
+	// -------- SOURCE FILES --------
 	static inline const constexpr char* FILE_ROI_L = "../../BakalarkaTake2/data/roi_l.csv";
 	static inline const constexpr char* FILE_ROI_H = "../../BakalarkaTake2/data/roi_h.csv";
 	static inline const constexpr char* FILE_A =	 "../../BakalarkaTake2/data/a.csv";

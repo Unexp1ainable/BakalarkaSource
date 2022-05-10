@@ -1,5 +1,11 @@
 #pragma once
-
+/*****************************************************************//**
+ * \file   DetectorSettingsDialog.h
+ * \brief  Dialog window managing the detector configuration.
+ * 
+ * \author Samuel Repka
+ * \date   May 2022
+ *********************************************************************/
 #include <QDialog>
 #include "ui_DetectorSettingsDialog.h"
 #include "../../engine/Configuration.h"
@@ -11,8 +17,11 @@ class DetectorSettingsDialog : public QDialog
 public:
 	DetectorSettingsDialog(Configuration& cfg, QWidget *parent = nullptr);
 	~DetectorSettingsDialog();
+
+	// update dialog with the latest values
 	void update();
 
+	// shared context
 	Configuration& m_cfg;
 
 protected slots:

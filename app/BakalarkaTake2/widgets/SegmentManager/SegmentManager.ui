@@ -17,28 +17,40 @@
    <item row="2" column="3" rowspan="2">
     <widget class="ImageLabel" name="imageLabel2">
      <property name="text">
-      <string>TextLabel</string>
+      <string>No image</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
      </property>
     </widget>
    </item>
    <item row="2" column="0" rowspan="2">
     <widget class="ImageLabel" name="imageLabel3">
      <property name="text">
-      <string>TextLabel</string>
+      <string>No image</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
      </property>
     </widget>
    </item>
    <item row="0" column="0" rowspan="2">
     <widget class="ImageLabel" name="imageLabel0">
      <property name="text">
-      <string>TextLabel</string>
+      <string>No image</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
      </property>
     </widget>
    </item>
    <item row="0" column="3" rowspan="2">
     <widget class="ImageLabel" name="imageLabel1">
      <property name="text">
-      <string>TextLabel</string>
+      <string>No image</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
      </property>
     </widget>
    </item>

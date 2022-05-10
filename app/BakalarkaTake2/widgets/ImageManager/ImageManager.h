@@ -1,4 +1,11 @@
 #pragma once
+/*****************************************************************//**
+ * \file   ImageManager.h
+ * \brief  Manager of the loaded BSE images
+ * 
+ * \author Samuel Repka
+ * \date   May 2022
+ *********************************************************************/
 
 #include <QWidget>
 

@@ -1,4 +1,11 @@
 #pragma once
+/*****************************************************************//**
+ * \file   ImageLabel.h
+ * \brief  Resizable image widget
+ * 
+ * \author Samuel Repka
+ * \date   May 2022
+ *********************************************************************/
 
 #include <QLabel>
 #include <QMouseEvent>

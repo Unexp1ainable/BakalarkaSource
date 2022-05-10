@@ -1,3 +1,10 @@
+/*****************************************************************//**
+ * \file   RefMapEstimator.cpp
+ * \brief  Implementation of the class
+ * 
+ * \author Samuel Repka
+ * \date   May 2022
+ *********************************************************************/
 #include "RefMapEstimator.h"
 #include <iostream>
 #include <fstream>
@@ -144,7 +151,7 @@ vector<double> RefMapEstimator::load_a(const double be)
 		}
 		// pchip
 		pchip tmp(std::move(energy_range()), std::move(intermediary));
-		// determine parameters according to energy
+		// determine parameters according to the energy
 		result[i] = tmp(be);
 	}
 	return result;
@@ -171,7 +178,7 @@ std::vector<double> RefMapEstimator::load_b(const double wd)
 		}
 		// pchip
 		pchip tmp(std::move(wd_range()), std::move(intermediary));
-		// determine parameters according to energy
+		// determine parameters according to wd
 		result[i] = tmp(wd);
 	}
 	return result;
@@ -198,7 +205,7 @@ std::vector<double> RefMapEstimator::load_k(const double wd)
 		}
 		// pchip
 		pchip tmp(std::move(wd_range()), std::move(intermediary));
-		// determine parameters according to energy
+		// determine parameters according to wd
 		result[i] = tmp(wd);
 	}
 	return result;

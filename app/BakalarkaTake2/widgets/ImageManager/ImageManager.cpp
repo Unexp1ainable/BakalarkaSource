@@ -1,3 +1,10 @@
+/*****************************************************************//**
+ * \file   ImageManager.cpp
+ * \brief  Implementation of the class
+ * 
+ * \author Samuel Repka
+ * \date   May 2022
+ *********************************************************************/
 #include "ImageManager.h"
 
 using namespace std;

@@ -1,3 +1,11 @@
+/*****************************************************************//**
+ * \file   DetectorSettingsDialog.cpp
+ * \brief  Implementation of the class
+ * 
+ * \author Samuel Repka
+ * \date   May 2022
+ *********************************************************************/
+
 #include "DetectorSettingsDialog.h"
 #include <QPushButton>
 

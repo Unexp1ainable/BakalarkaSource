@@ -1,3 +1,10 @@
+/*****************************************************************//**
+ * \file   ImageLabel.cpp
+ * \brief  Implementation of the resizable item widget.
+ * 
+ * \author Samuel Repka
+ * \date   May 2022
+ *********************************************************************/
 #include "ImageLabel.h"
 
 using namespace std;

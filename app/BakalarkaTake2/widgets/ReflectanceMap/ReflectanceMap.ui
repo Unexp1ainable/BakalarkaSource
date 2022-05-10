@@ -28,7 +28,10 @@
         <enum>QFrame::Box</enum>
        </property>
        <property name="text">
-        <string>TextLabel</string>
+        <string>No image</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
        </property>
       </widget>
      </item>
@@ -38,7 +41,10 @@
         <enum>QFrame::Box</enum>
        </property>
        <property name="text">
-        <string>TextLabel</string>
+        <string>No image</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
        </property>
       </widget>
      </item>
@@ -48,7 +54,10 @@
         <enum>QFrame::Box</enum>
        </property>
        <property name="text">
-        <string>TextLabel</string>
+        <string>No image</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
        </property>
       </widget>
      </item>
@@ -58,7 +67,10 @@
         <enum>QFrame::Box</enum>
        </property>
        <property name="text">
-        <string>TextLabel</string>
+        <string>No image</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
        </property>
       </widget>
      </item>
@@ -73,7 +85,10 @@
       </sizepolicy>
      </property>
      <property name="text">
-      <string>TextLabel</string>
+      <string>No image</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
      </property>
     </widget>
    </item>

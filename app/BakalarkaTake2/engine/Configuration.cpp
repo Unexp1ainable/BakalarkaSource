@@ -1,3 +1,10 @@
+/*****************************************************************//**
+ * \file   Configuration.cpp
+ * \brief  Implementation of the class
+ * 
+ * \author Samuel Repka
+ * \date   May 2022
+ *********************************************************************/
 #include "Configuration.h"
 
 #include <QFile>

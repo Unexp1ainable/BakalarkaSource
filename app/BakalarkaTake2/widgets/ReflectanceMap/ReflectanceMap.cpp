@@ -1,3 +1,10 @@
+/*****************************************************************//**
+ * \file   ReflectanceMap.cpp
+ * \brief  Implementation fo the class
+ * 
+ * \author Samuel Repka
+ * \date   May 2022
+ *********************************************************************/
 #include "ReflectanceMap.h"
 #include <QPainter>
 #include <QPen>

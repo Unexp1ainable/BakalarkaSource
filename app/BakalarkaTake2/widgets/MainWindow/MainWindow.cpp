@@ -1,3 +1,10 @@
+/*****************************************************************//**
+ * \file   MainWindow.cpp
+ * \brief  Implementation of the class
+ * 
+ * \author Samuel Repka
+ * \date   May 2022
+ *********************************************************************/
 #include "MainWindow.h"
 
 #include <QFileDialog>
@@ -18,6 +25,8 @@ MainWindow::MainWindow(QWidget* parent)
 	: QMainWindow(parent), m_cfg()
 {
 	setupUi(this);
+
+	// initialize splitter segment sizes
 	auto sizes = splitter->sizes();
 	sizes[0] = 500;
 	sizes[1] = 100;
@@ -29,23 +38,6 @@ MainWindow::MainWindow(QWidget* parent)
 	connect(actionUse_default_material, &QAction::triggered, this, &MainWindow::onUseDefaultMaterial);
 	connect(imageManager->selector(), &ImageLabel::selected, this, &MainWindow::onSelected);
 	connect(imageManager->segmentManager(), &SegmentManager::swapped, this, &MainWindow::onSwapped);
-
-	// TODO remove
-	try
-	{
-		array<QString, 4> filenames = {
-				"C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/2022-04-11 data pro Sama konst GO/5 kV/5kV_10mm_1.png",
-				"C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/2022-04-11 data pro Sama konst GO/5 kV/5kV_10mm_2.png",
-				"C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/2022-04-11 data pro Sama konst GO/5 kV/5kV_10mm_4.png",
-				"C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/2022-04-11 data pro Sama konst GO/5 kV/5kV_10mm_3.png",
-		};
-		loadBSEImages(filenames);
-	}
-	catch (const std::exception& e)
-	{
-		qDebug("Sample data initialization failed.");
-		qDebug(e.what());
-	}
 }
 
 MainWindow::~MainWindow()
@@ -78,7 +70,7 @@ void MainWindow::loadBSEImages(std::array<QString, 4> paths)
 			return;
 		}
 
-		// look for .hdr file
+		// look for .hdr file and load contents
 		auto file = ifstream((paths[i].replace(QChar('.'), "-") + ".hdr").toStdString());
 		std::string content;
 		if (file.is_open()) {
@@ -126,6 +118,7 @@ void MainWindow::loadBSEImages(std::array<QString, 4> paths)
 		m_origImgs[place] = img;
 	}
 
+	// reset estimator with current values
 	try {
 		m_estimator.reset(be / 1000, wd * 1000, bc * 1e9);
 	}
@@ -176,7 +169,7 @@ void MainWindow::showNormalImage()
 														{Segments::Q2, Segments::Q4},
 														{Segments::Q3, Segments::Q4},
 	};
-
+	// use 6 threads, one for each pair
 	std::array<std::future<std::unique_ptr<std::array < std::array < std::vector<QPointF>, 256>, 256>>>, 6> futures;
 	for (int i = 0; i < 6; ++i)
 		futures[i] = std::async(std::launch::async, [&segs, i, this, &status, &cancelPoint]() { return precalculateIntersections(segs[i].first, segs[i].second, status, cancelPoint); });
@@ -231,9 +224,10 @@ void MainWindow::showNormalImage()
 				double mag = sqrt(pow(res.x(), 2) + pow(res.y(), 2));
 				res.rx() /= mag;
 				res.ry() /= mag;
-				mid = 0.999;
+				mid = 0.999; // avoid 90 degrees inclination
 			}
 			double z = sqrt(1 - mid);
+			// the reconstruction algorithm expects one coordinate negative for some reason
 			file << -res.x() << " " << res.y() << " " << z << "\n";
 			int r = lround(res.x() * 128 + 127);
 			int g = lround(res.y() * 128 + 127);
@@ -262,6 +256,7 @@ void MainWindow::onDetectorSettingsChanged()
 
 void MainWindow::onUseDefaultMaterial()
 {
+	// general reflectance maps
 	m_estimator.reset(5, 10, 7);
 }
 
@@ -295,13 +290,6 @@ void MainWindow::onSelected(double x, double y)
 	auto npts23 = el2.findPOIs(el3);
 	auto npts24 = el2.findPOIs(el4);
 	auto npts34 = el3.findPOIs(el4);
-
-	//assert(npts12.size() != 0);
-	//assert(npts13.size() != 0);
-	//assert(npts14.size() != 0);
-	//assert(npts23.size() != 0);
-	//assert(npts24.size() != 0);
-	//assert(npts34.size() != 0);
 
 	evaluatePointsGraphic(npts12, npts13, npts14, npts23, npts24, npts34);
 }
@@ -344,6 +332,8 @@ QPointF MainWindow::evaluatePointsGraphic(std::vector<QPointF>& npts12, std::vec
 
 	std::array<std::vector<QPointF>*, 6> grouped = { &npts12, &npts13, &npts14, &npts23, &npts24, &npts34 };
 	std::array<std::vector<QPointF*>, 6> groupedPtr{};
+
+	// create arrays of pointers to the points. If source array is empty, insert nullptr to allow deeper iterations
 	int i = 0;
 	for (const auto& group : grouped) {
 		vector<QPointF*> tmp{ group->size(),nullptr };
@@ -362,7 +352,7 @@ QPointF MainWindow::evaluatePointsGraphic(std::vector<QPointF>& npts12, std::vec
 	const QPointF* curr[6]{};
 	const QPointF* bestPoints[6]{};
 
-
+	// terrible but minimum of memory copying
 	for (const auto& g0 : groupedPtr[0]) {
 		for (const auto& g1 : groupedPtr[1]) {
 			for (const auto& g2 : groupedPtr[2]) {

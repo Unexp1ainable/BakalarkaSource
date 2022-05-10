@@ -1,5 +1,11 @@
 #pragma once
-
+/*****************************************************************//**
+ * \file   SegmentManager.h
+ * \brief  Management fo the BSE images.
+ * 
+ * \author Samuel Repka
+ * \date   May 2022
+ *********************************************************************/
 #include <QWidget>
 #include <QSvgWidget>
 
@@ -19,6 +25,10 @@ public:
 	~SegmentManager();
 
 	void loadImages(std::array<cv::Mat, 4> imgs);
+
+	/**
+	 * Support for drag&drop swapping.
+	 */
 	virtual void mouseMoveEvent(QMouseEvent* event) override;
 	virtual void mouseReleaseEvent(QMouseEvent* event) override;
 
@@ -28,7 +38,6 @@ protected:
 	std::array<ImageLabel*, 4> m_labels;
 
 private:
-	//Ui::SegmentManager ui;
 	int m_moving = NOT_MOVING;
 
 signals:

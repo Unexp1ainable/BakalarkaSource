@@ -1,3 +1,11 @@
+/*****************************************************************//**
+ * \file   Superellipse.cpp
+ * \brief  Implementation of the class
+ * 
+ * \author Samuel Repka
+ * \date   May 2022
+ *********************************************************************/
+
 #include "Superellipse.h"
 
 #include <algorithm>

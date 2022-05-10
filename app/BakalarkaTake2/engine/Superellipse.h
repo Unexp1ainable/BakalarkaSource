@@ -1,10 +1,15 @@
 #pragma once
-
+/*****************************************************************//**
+ * \file   Superellipse.h
+ * \brief  Superellipse class
+ * 
+ * \author Samuel Repka
+ * \date   May 2022
+ *********************************************************************/
 #include <QPointF>
 
 #include <vector>
 
-#include <boost/math/interpolators/pchip.hpp>
 #include <opencv2/opencv.hpp>
 #include "Configuration.h"
 
@@ -22,6 +27,7 @@ public:
     double c() const { return m_c; }
     double h() const { return m_h; }
     double k() const { return m_k; }
+    // bounding box
     std::pair<QPointF, QPointF> bBox() const { return m_bBox; };
 
     void setA(double a) { m_a = a; calculateBoundingBox(); }
@@ -38,17 +44,40 @@ public:
      * @param height Canvas height
     */
     void changeSegment(Segments seg, int width = 1, int height = 1);
+
+    /**
+     * Scale normalised superellipse to given width and height.
+     */
     void scale(int width, int height);
 
+    // calculate superellipse points in the given x or y coordinate
     RootResult rootsX(double y) const;
     RootResult rootsY(double x) const;
     QPointF autoRoots(double x, double y, bool& ok) const;
 
+    /**
+     * Rasterize superellipse.
+     */
     std::vector<QPoint> rasterize() const;
+
+    /**
+     * Draw superellipse onto the image.
+     */
     void draw(cv::Mat& img) const;
+
+    /**
+     * Rasterize the superellipse beginning from the top middle, continuing to the right around the whole superellipse.
+     */
     std::vector<QPointF> borderPoints() const;
+
+    /**
+     * Find points of interest relative to another superellipse.
+     */
     std::vector<QPointF> findPOIs(const Superellipse& el2) const;
 
+    /**
+     * Check if the superellipse is not a point.
+     */
     bool isNull() const;
 
 protected:
@@ -61,7 +90,6 @@ protected:
     double m_k = 0.;
 
     std::pair<QPointF, QPointF> m_bBox;
-	//boost::math::interpolators::pchip<std::vector<double>> a;
 };
 
 struct RootResult {
