@@ -36,6 +36,9 @@ void ReflectanceMap::setMap(array<Mat, 4>& maps, array<Mat, 4>& grayMaps)
 
 void ReflectanceMap::colorPixels(unsigned char a, unsigned char b, unsigned char c, unsigned char d)
 {
+	if (m_grayMaps[0].isNull())
+		return;
+
 	array<QColor, 4> colors = { QColor("#FF0000"), QColor("#80FF00"), QColor("#00FFFF"), QColor("#8000FF"), };
 	array<unsigned char, 4> values = { a, b, c, d };
 	auto sumCopy = m_sumMap.copy();
@@ -64,6 +67,9 @@ void ReflectanceMap::colorPixels(unsigned char a, unsigned char b, unsigned char
 void ReflectanceMap::point(double x, double y, QColor color)
 {
 	auto pix = ui.mapOverviewLabel->pixmap();
+	if (pix.isNull())
+		return;
+
 	auto painter = QPainter(&pix);
 	auto pen = QPen(color, 3);
 	auto brush = QBrush(color);
@@ -81,6 +87,8 @@ void ReflectanceMap::setPQ(double p, double q)
 
 void ReflectanceMap::drawSuperellipse(Superellipse el, Segments seg)
 {
+	if (ui.map0Label->pixmap().isNull())
+		return;
 	auto imgOverview = ui.mapOverviewLabel->pixmap().toImage();
 	QImage img;
 

@@ -34,7 +34,7 @@ MainWindow::MainWindow(QWidget* parent)
 	// TODO remove
 	try
 	{
-		loadReflectanceMaps("C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/testmaps/5kV_10mm_3_u.png");
+		loadReflectanceMaps("C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/testmapss/5kV_10mm_3_u.png");
 		array<QString, 4> filenames = {
 				"C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/2022-04-11 data pro Sama konst GO/5 kV/5kV_10mm_1.png",
 				"C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/2022-04-11 data pro Sama konst GO/5 kV/5kV_10mm_2.png",

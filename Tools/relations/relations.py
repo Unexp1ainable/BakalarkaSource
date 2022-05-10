@@ -14,7 +14,7 @@ def loadA(path: str):
         result = {}
         for line in f:
             if re.match(r"[0-9]", line[0]):
-                name = line.strip()
+                name = line.strip()[:-4]
 
             elif line[0] == "[":
                 result[name] = list(map(float, line.strip()[1:-1].split(",")))
@@ -28,7 +28,7 @@ def loadB(path: str):
         result = {}
         for line in f:
             if re.match(r"[0-9]", line[0]):
-                name = line.strip()
+                name = line.strip()[:-4]
 
             elif line[0] == "[":
                 result[name] = list(map(float, line.strip()[1:-1].split(",")))
@@ -42,7 +42,7 @@ def loadC(path: str):
         result = {}
         for line in f:
             if re.match(r"[0-9]+kV.*", line):
-                name = line.strip()
+                name = line.strip()[:-4]
 
             elif re.match(r"[0-9]", line[0]):
                 result[name] = float(line.strip())
@@ -56,7 +56,7 @@ def loadK(path: str):
         result = {}
         for line in f:
             if re.match(r"[0-9]", line[0]):
-                name = line.strip()
+                name = line.strip()[:-4]
 
             elif line[0] == "[":
                 result[name] = list(map(float, line.strip()[1:-1].split(",")))
@@ -71,7 +71,7 @@ def loadROI(path: str):
         result2 = {}
         for line in f:
             if re.match(r"[0-9]", line[0]):
-                name = line.strip()
+                name = line.strip()[:-4]
 
             elif line[:4] == "ROI:":
                 result1[name], result2[name] = list(map(int, line[4:].strip().split(" - ")))
@@ -151,11 +151,12 @@ if __name__ == "__main__":
     # plt.show()
 
     # exit(0)
-    for param in params_scalar:
+    for param in ["roil", "roih"]:
         for dist in wds:
             name = param+"-wd-"+dist+"mm"
             plt.title(name)
-
+            plt.xlabel("Beam energy")
+            plt.ylabel("Pixel value")
             plt.plot(*zip(*mm_s[param][dist]), label=dist+"mm")
             plt.legend()
             plt.savefig("graphs/" + name + ".png")
@@ -164,36 +165,102 @@ if __name__ == "__main__":
         for e in energies:
             name = param+"-e-"+e+"kV"
             plt.title(name)
-
+            plt.xlabel("Working distance")
+            plt.ylabel("Pixel value")
             plt.plot(*zip(*kv_s[param][e]), label=e+"kV")
             plt.legend()
             plt.savefig("graphs/" + name + ".png")
             plt.clf()
 
-    for param in params_scalar:
-        name = param+"-wd_all"
+    for param in ["c"]:
         for dist in wds:
+            name = param+"-wd-"+dist+"mm"
             plt.title(name)
+            plt.xlabel("Beam energy")
+            plt.ylabel("Value")
+            plt.plot(*zip(*mm_s[param][dist]), label=dist+"mm")
+            plt.legend()
+            plt.savefig("graphs/" + name + ".png")
+            plt.clf()
 
+        for e in energies:
+            name = param+"-e-"+e+"kV"
+            plt.title(name)
+            plt.xlabel("Working distance")
+            plt.ylabel("Value")
+            plt.plot(*zip(*kv_s[param][e]), label=e+"kV")
+            plt.legend()
+            plt.savefig("graphs/" + name + ".png")
+            plt.clf()
+
+    for param in ["roil", "roih"]:
+        name = param+"-wd-all"
+        plt.title(name)
+        plt.xlabel("Beam energy")
+        plt.ylabel("Pixel value")
+        for dist in wds:
             plt.plot(*zip(*mm_s[param][dist]), label=dist+"mm")
         plt.legend()
         plt.savefig("graphs/" + name + ".png")
         plt.clf()
 
-    for param in params_scalar:
-        name = param+"kV_all"
+        name = param+"-e-all"
+        plt.title(name)
+        plt.xlabel("Working distance")
+        plt.ylabel("Pixel value")
         for e in energies:
-            plt.title(name)
             plt.plot(*zip(*kv_s[param][e]), label=e+"kV")
-
         plt.legend()
         plt.savefig("graphs/" + name + ".png")
         plt.clf()
+
+    for param in ["c"]:
+        name = param+"-wd-all"
+        plt.title(name)
+        plt.xlabel("Beam energy")
+        plt.ylabel("Value")
+        for dist in wds:
+            plt.plot(*zip(*mm_s[param][dist]), label=dist+"mm")
+        plt.legend()
+        plt.savefig("graphs/" + name + ".png")
+        plt.clf()
+
+        name = param+"-e-all"
+        plt.title(name)
+        plt.xlabel("Working distance")
+        plt.ylabel("Value")
+        for e in energies:
+            plt.plot(*zip(*kv_s[param][e]), label=e+"kV")
+        plt.legend()
+        plt.savefig("graphs/" + name + ".png")
+        plt.clf()
+
+    # for param in params_scalar:
+    #     name = param+"-wd_all"
+    #     for dist in wds:
+    #         plt.title(name)
+
+    #         plt.plot(*zip(*mm_s[param][dist]), label=dist+"mm")
+    #     plt.legend()
+    #     plt.savefig("graphs/" + name + ".png")
+    #     plt.clf()
+
+    # for param in params_scalar:
+    #     name = param+"kV_all"
+    #     for e in energies:
+    #         plt.title(name)
+    #         plt.plot(*zip(*kv_s[param][e]), label=e+"kV")
+
+    #     plt.legend()
+    #     plt.savefig("graphs/" + name + ".png")
+    #     plt.clf()
 
     for param in params_arr:
         for dist in wds:
             name = param+"-wd-"+dist+"mm"
             plt.title(name)
+            plt.xlabel("PCHIP point number")
+            plt.ylabel("Normalised value")
             for par in mm[param][dist]:
                 plt.plot(par[1], label=par[0])
             plt.legend()
@@ -203,6 +270,8 @@ if __name__ == "__main__":
         for e in energies:
             name = param+"-e-"+e+"kv"
             plt.title(name)
+            plt.xlabel("PCHIP point number")
+            plt.ylabel("Normalised value")
             for par in kv[param][e]:
                 plt.plot(par[1], label=par[0])
             plt.legend()

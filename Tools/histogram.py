@@ -13,10 +13,12 @@ if __name__ == "__main__":
         # cv.imshow("a", img)
         # cv.waitKey(0)
         # cv.destroyAllWindows()
+        plt.xlabel("Pixel intensity")
+        plt.ylabel("Fraction")
         h = cv.calcHist([img], [0], None, [256], [0, 256])
         h[0] = 0
-        # cv.normalize(h, h)
-        plt.plot(h, label=path)
+        cv.normalize(h, h)
+        plt.plot(h, label=path[:-4]+"nA")
         # plt.figure()
 
     plt.legend()
@@ -31,14 +33,19 @@ if __name__ == "__main__":
             im /= number/target
             im += np.random.random(im.shape)-0.5
             im += np.random.random(im.shape)-0.5
+            im[im < 0] = 0
+            im[im > 255] = 255
             img = np.round(im).astype(np.uint8)
         # cv.imshow("a", img)
         # cv.waitKey(0)
         # cv.destroyAllWindows()
+        plt.xlabel("Pixel intensity")
+        plt.ylabel("Fraction")
         h = cv.calcHist([img], [0], None, [256], [0, 256])
         h[0] = 0
-        # cv.normalize(h, h)
-        plt.plot(h, label=path)
+        h[1] = 0
+        cv.normalize(h, h)
+        plt.plot(h, label=path[:-4]+"nA")
         # plt.figure()
 
     plt.legend()
