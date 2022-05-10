@@ -1,12 +1,13 @@
-from math import isclose, log, sqrt
-from multiprocessing.synchronize import Lock
-from os import mkdir
+"""
+Author: Samuel Repka
+Date: May 2022
+Description: Library for automatic ellipse fitting.
+"""
+
+from math import isclose
 from typing import List, Tuple
 import cv2 as cv
 import numpy as np
-import matplotlib.pyplot as plt
-from scipy import ndimage
-from skimage.morphology import skeletonize
 from ellipse_common import *
 from numba import jit
 
@@ -39,6 +40,7 @@ def show(a, b, c, k):
 @jit(nopython=True)
 def fit_a(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
           height, width, val) -> Tuple[float, float, float, float]:
+    """ Fit \"a\" parameter"""
     lastRank = rank_ellipse(a, b, c, 0, k, points, height, width)
     # determine direction
     currRank = rank_ellipse(a - STEP_A, b, c, 0, k, points, height, width)  # - to promote lower a
@@ -75,6 +77,7 @@ def fit_a(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
 @jit(nopython=True)
 def fit_b(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
           height, width, val) -> Tuple[float, float, float, float]:
+    """ Fit \"b\" parameter"""
     lastRank = rank_ellipse(a, b, c, 0, k, points, height, width)
     # determine direction
     currRank = rank_ellipse(a, b + STEP_B, c, 0, k, points, height, width)
@@ -111,6 +114,7 @@ def fit_b(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
 @jit(nopython=True)
 def fit_c(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
           height, width, val) -> Tuple[float, float, float, float]:
+    """ Fit \"c\" parameter"""
     lastRank = rank_ellipse(a, b, c, 0, k, points, height, width)
     # determine direction
     currRank = rank_ellipse(a, b, c + STEP_C, 0, k, points, height, width)
@@ -148,6 +152,7 @@ def fit_c(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
 @jit(nopython=True)
 def fit_k(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
           height, width, val) -> Tuple[float, float, float, float]:
+    """ Fit \"k\" parameter"""
     lastRank = rank_ellipse(a, b, c, 0, k, points, height, width)
     # determine direction
     currRank = rank_ellipse(a, b, c, 0, k + STEP_K, points, height, width)
@@ -183,6 +188,16 @@ def fit_k(a: float, b: float, c: float, k: float, points: List[Tuple[int, int]],
 
 
 def fit_ellipse(img: np.ndarray, value: int = None, name: str = "") -> Tuple[float, float, float, float, float]:
+    """Find the best superellipse fit
+
+    Args:
+        img (np.ndarray): Input image
+        value (int, optional): value to be filtered. Defaults to None.
+        name (str, optional): Image name. Defaults to "".
+
+    Returns:
+        Tuple[float, float, float, float, float]: Fitted parameters a,b,c,h,k.
+    """
     global STEP_A, STEP_B, STEP_C
     if type(img) == tuple:  # multiprocessing arguments
         value = img[1]
@@ -202,6 +217,7 @@ def fit_ellipse(img: np.ndarray, value: int = None, name: str = "") -> Tuple[flo
     height = img.shape[0]
     width = img.shape[1]
 
+    # initial guess
     a = round((bounds[2]-bounds[0])*0.5)
     b = a/2
     c = 2
@@ -210,6 +226,7 @@ def fit_ellipse(img: np.ndarray, value: int = None, name: str = "") -> Tuple[flo
     convergence = False
     i = 0
 
+    # big steps first
     while not convergence:
         oldb = b
         olda = a
@@ -229,6 +246,7 @@ def fit_ellipse(img: np.ndarray, value: int = None, name: str = "") -> Tuple[flo
             break
         i += 1
 
+    # half the step and refine the result
     convergence = False
     i = 0
     STEP_A /= 2
@@ -273,7 +291,7 @@ def fit_ellipse(img: np.ndarray, value: int = None, name: str = "") -> Tuple[flo
 
 
 if __name__ == "__main__":
-    PATH = "C:/Users/samor/Desktop/VUT/5_semester/Bakalarka/dataset/Q4-upravene-spravne/all/5kV_10mm_3_u.png"
+    PATH = "dataset/Q4-upravene-spravne/all/5kV_10mm_3_u.png"
     VALUE = 192
     ANGLE = 150
     VISUALIZE = True

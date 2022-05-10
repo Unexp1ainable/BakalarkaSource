@@ -56,11 +56,11 @@ protected:
 
 
 	// -------- SOURCE FILES --------
-	static inline const constexpr char* FILE_ROI_L = "../../BakalarkaTake2/data/roi_l.csv";
-	static inline const constexpr char* FILE_ROI_H = "../../BakalarkaTake2/data/roi_h.csv";
-	static inline const constexpr char* FILE_A =	 "../../BakalarkaTake2/data/a.csv";
-	static inline const constexpr char* FILE_B =	 "../../BakalarkaTake2/data/b.csv";
-	static inline const constexpr char* FILE_K =	 "../../BakalarkaTake2/data/k.csv";
+	static inline const constexpr char* FILE_ROI_L = "data/roi_l.csv";
+	static inline const constexpr char* FILE_ROI_H = "data/roi_h.csv";
+	static inline const constexpr char* FILE_A =	 "data/a.csv";
+	static inline const constexpr char* FILE_B =	 "data/b.csv";
+	static inline const constexpr char* FILE_K =	 "data/k.csv";
 	
 	static inline const constexpr int N_POINTS = 32;
 	static inline const constexpr int N_POINTS_BE = 6;

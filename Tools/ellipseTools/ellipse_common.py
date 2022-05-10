@@ -1,13 +1,28 @@
-
+"""
+Author: Samuel Repka
+Date: May 2022
+Description: A library for the general ellipse operations.
+"""
+from typing import List, Tuple
 from scipy import ndimage
 from skimage.morphology import skeletonize
 from numba import jit
-from math import isclose, log, sqrt
 import numpy as np
 import cv2 as cv
 
 
 def draw_ellipse(img: np.ndarray, a: float, b: float, c: float, h: float, k: float, color=255) -> None:
+    """Draw an ellipse on an image
+
+    Args:
+        img (np.ndarray): Image to be drawn on
+        a (float): a parameter
+        b (float): b parameter
+        c (float): c parameter
+        h (float): h parameter
+        k (float): k parameter
+        color (int, optional): Line color. Defaults to 255.
+    """
     wi = img.shape[1]
     hi = img.shape[0]
     hx = hi//2
@@ -21,7 +36,20 @@ def draw_ellipse(img: np.ndarray, a: float, b: float, c: float, h: float, k: flo
 
 
 @jit(nopython=True)
-def rootsY(a, b, c, h, k, x):
+def rootsY(a: float, b: float, c: float, h: float, k: float, x: float) -> Tuple[int, float, float]:
+    """Calculate roots of the superellipse defined by parameters in the x level
+
+    Args:
+        a (float): superellipse parameter
+        b (float): superellipse parameter
+        c (float): superellipse parameter
+        h (float): superellipse parameter
+        k (float): superellipse parameter
+        x (float): superellipse parameter
+
+    Returns:
+        Tuple[int, float, float]: First number is the count of results, the rest are results. If the count is less than the number of results, the results are invalid and 0.
+    """
     mid = 1-abs((x+h)/a)**(c)
     if mid < 0:
         return (0, 0., 0.)
@@ -33,7 +61,20 @@ def rootsY(a, b, c, h, k, x):
 
 
 @jit(nopython=True)
-def rootsX(a, b, c, h, k, y):
+def rootsX(a: float, b: float, c: float, h: float, k: float, y: float) -> Tuple[int, float, float]:
+    """Calculate roots of the superellipse defined by parameters in the y level
+
+    Args:
+        a (float): superellipse parameter
+        b (float): superellipse parameter
+        c (float): superellipse parameter
+        h (float): superellipse parameter
+        k (float): superellipse parameter
+        x (float): superellipse parameter
+
+    Returns:
+        Tuple[int, float, float]: First number is the count of results, the rest are results. If the count is less than the number of results, the results are invalid and 0.
+    """
     mid = 1-abs((y+k+b)/b)**(c)
     if mid < 0:
         return (0, 0., 0.)
@@ -45,7 +86,19 @@ def rootsX(a, b, c, h, k, y):
 
 
 @jit(nopython=True)
-def raster_ellipse(a: float, b: float, c: float, h: float, k: float):
+def raster_ellipse(a: float, b: float, c: float, h: float, k: float) -> np.ndarray:
+    """Raster the superellipse
+
+    Args:
+        a (float): parameter of the superellipse
+        b (float): parameter of the superellipse
+        c (float): parameter of the superellipse
+        h (float): parameter of the superellipse
+        k (float): parameter of the superellipse
+
+    Returns:
+        np.ndarray: calculated points
+    """
     if a == 0 or b == 0:
         return np.empty((0, 0), np.int64)
     result = []
@@ -87,8 +140,18 @@ def raster_ellipse(a: float, b: float, c: float, h: float, k: float):
 
 
 @jit(nopython=True)
-def rank_point(ellipsePoints: np.ndarray, x: int, y: int):
-    lowestDist = 99999999
+def rank_point(ellipsePoints: np.ndarray, x: int, y: int) -> float:
+    """Return the squared distance to the closest point of the superellipse
+
+    Args:
+        ellipsePoints (np.ndarray): rasterized superellipse
+        x (int): point coordinate
+        y (int): point coordinate
+
+    Returns:
+        float: squared distance to the closest point
+    """
+    lowestDist = 99999999.
     for xp, yp in ellipsePoints:
         yp = -yp
         d = (x-xp)**2+(y-yp)**2
@@ -98,7 +161,24 @@ def rank_point(ellipsePoints: np.ndarray, x: int, y: int):
 
 
 @jit(nopython=True)
-def rank_ellipse(a, b, c, h, k, maskPoints, height, width):
+def rank_ellipse(
+        a: float, b: float, c: float, h: float, k: float, maskPoints: List[Tuple[float, float]],
+        height: float, width: float):
+    """Return sum of least squares of the distances from each of the mask points to the superellipse
+
+    Args:
+        a (float): superellipse parameter
+        b (float): superellipse parameter
+        c (float): superellipse parameter
+        h (float): superellipse parameter
+        k (float): superellipse parameter
+        maskPoints (List[Tuple[float, float]]): list of points for which the rank is calculated
+        height (float): size of the image
+        width (float): size of the image
+
+    Returns:
+        _type_: _description_
+    """
     rank = 0
     hx = width//2
     ellipsePoints = raster_ellipse(a, b, c, h, k)
@@ -109,7 +189,15 @@ def rank_ellipse(a, b, c, h, k, maskPoints, height, width):
 
 
 @jit(nopython=True)
-def get_bounds(img):
+def get_bounds(img: np.ndarray) -> Tuple[int, int, int, int]:
+    """Strip borders of the image containing just 0 pixels
+
+    Args:
+        img (np.ndarray): image to be filtered
+
+    Returns:
+        Tuple[int,int,int,int]: Minimal rectangular area of the image where all of the non-zero pixels are.
+    """
     height = img.shape[0]
     width = img.shape[1]
     up = 0
@@ -140,13 +228,33 @@ def get_bounds(img):
     return (left, up, right, down)
 
 
-def preprocessing(img, angle=-11, size=(1024, 1024)):
+def preprocessing(img: np.ndarray, angle=-11, size=(1024, 1024)) -> np.ndarray:
+    """Rotate and scale image
+
+    Args:
+        img (np.ndarray): Image to be processed
+        angle (int, optional): Angle of rotation in degrees. Defaults to -11.
+        size (tuple, optional): Final size after scaling. Defaults to (1024, 1024).
+
+    Returns:
+        np.ndarray: Processed image
+    """
     img = ndimage.rotate(img, angle, reshape=False)
     img = cv.resize(img, size)
     return img
 
 
-def processing(img, value):
+def processing(img: np.ndarray, value: int) -> np.ndarray:
+    """Filter pixels with given value from the image, skeletonize result and remove lone pixels.
+
+    Args:
+        img (np.ndarray): Image to be processed
+        value (int): Pixel value to be filtered
+
+    Returns:
+        np.ndarray: Processed image
+    """
+
     img = img == value
     img = skeletonize(img)
 
@@ -159,11 +267,3 @@ def processing(img, value):
     img = cv.filter2D(img, -1, kernel)
     _, img = cv.threshold(img, kernelsize**2+neighbourPixelCount-1, 255, cv.THRESH_BINARY)
     return img
-
-
-if __name__ == "__main__":
-    imze = np.zeros((300, 300), np.uint8)
-    draw_ellipse(imze, 80, 100, 2, -50, 20)
-    cv.imshow("a", imze)
-    cv.waitKey(0)
-    cv.destroyAllWindows()

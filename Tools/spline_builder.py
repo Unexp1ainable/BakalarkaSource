@@ -42,6 +42,7 @@ nodes = []
 
 def parse_args():
     parser = ArgumentParser()
+    parser.description = "A graphical tool for easier PCHIP fitting. Press enter to print data to the console. Esc to exit."
     parser.add_argument("path", help="Path to .csv file with data.")
     parser.add_argument("mode", choices=["value", "a", "b", "c", "k"], help="Which parameter to interpolate.")
     return parser.parse_args()
@@ -100,6 +101,7 @@ def finalize_canvas(img: np.ndarray) -> np.ndarray:
 
 
 def make_template(args):
+    """ Create template that will be used as a background """
     global HSCALE, WSCALE, WSCALEI, YMAX, roi_high
 
     if args.mode not in MODES:
@@ -119,13 +121,6 @@ def make_template(args):
                 data[x] = y
             except:
                 pass
-
-    plt.title("Fitted parameter")
-    plt.xlabel("Pixel value")
-    plt.ylabel("Normalized parameter")
-    plt.plot(data, label="a")
-    plt.show()
-
     YMAX = 1
     if data.max() > 1:
         low = data.min()
@@ -203,30 +198,12 @@ def onMouseMotion(x, y):
         update_image()
 
 
-def load(s):
-    global nodes
-    items = re.findall(r"[+-]?[0-9]+\.[0-9]*", s)
-    x = []
-    y = []
-    switch = False
-    for item in items:
-        if not switch:
-            x.append(float(item))
-        else:
-            y.append(float(item))
-
-        switch = not switch
-
-    if len(x) != 18 and len(y) != 18:
-        print("Invalid string.")
-        return
-
-    content = zip(x, y)
-    for i, ct in enumerate(content):
-        nodes[i] = (round(ct[0]*WSCALE), round(H-ct[1]*HSCALE))
-
-
 def update_image(handle=None):
+    """Redraw the shown frame.
+
+    Args:
+        handle (tuple, optional): If defined, current coordinates will be drawn next to the defined point. Defaults to None.
+    """
     img = template.copy()
 
     # roi handles and lines
@@ -263,6 +240,7 @@ def update_image(handle=None):
 
 
 def initialize_nodes():
+    """ Initialize PCHIP handles"""
     global nodes
     nodes = []
     for i in np.arange(roi_low, roi_high+1, (roi_high-roi_low)/POINTS_N):
@@ -271,6 +249,7 @@ def initialize_nodes():
 
 
 def run(args, wname=WNAME):
+    """ Run mainloop """
     global template, WNAME
     WNAME = wname
     template = make_template(args)
@@ -292,9 +271,6 @@ def run(args, wname=WNAME):
             with open("tmp.txt", "a", encoding="utf-8") as f:
                 print(str(list(zip(np.arange(0, 256+1, POINT_GAP), arr[1]))), file=f)
                 print(f"ROI: {round(roi_low/WSCALE)} - {round(roi_high//WSCALE)}\n", file=f)
-        elif key == 108:  # l
-            l = input("Insert loading string: ")
-            load(l)
 
         # close on manual window close
         if cv.getWindowProperty(wname, cv.WND_PROP_VISIBLE) < 1:
